@@ -1,0 +1,195 @@
+﻿@page "/form-solicitud"
+@using MudBlazor
+@inject NavigationManager Navigation
+@inject IDialogService DialogService
+@inject HttpClient Http
+@using SISFRONT.Components.Utilities
+@inject ProtectedSessionStorage SessionStorage
+@inject GoogleMapsInterop googleMapsInterop
+@inject IHttpContextAccessor HttpContextAccessor
+@inject SessionService sessions
+@inject IJSRuntime JS
+@inject IGirosService GiroService
+
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="my-10 px-4">
+    <MudForm @ref="form2">
+        <MudPaper Class="p-6 rounded-xl shadow-sm" Elevation="0">
+
+            <!-- Título principal -->
+            <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4 text-primary fw-bold">
+                📝 Registro de Nueva Solicitud
+            </MudText>
+
+            <!-- Sección: Datos Generales -->
+            <MudText Typo="Typo.subtitle2" Class="mb-1 text-muted">📌 Datos Generales</MudText>
+            <MudDivider Class="mb-3" />
+
+            <MudGrid Spacing="2">
+                <!--
+                <MudItem xs="12" sm="4">
+                    <MudTextField Label="N° Autorizacion" @bind-Value="solDTO.NroAutorizacion" Dense="true" />
+                </MudItem>
+                -->
+                <MudItem xs="12" sm="6">
+                    <MudDatePicker Label="Fecha de Solicitud"
+                                   @bind-Date="solDTO.FechaSolicitud"
+                                   Dense="true"
+                                   Editable="true"
+                                   Mask="@(new DateMask("dd/MM/yyyy"))"
+                                   DateFormat="dd/MM/yyyy"
+                                   Required="true"
+                                   Placeholder="dd/mm/yyyy" />
+                </MudItem>
+                <!--
+                <MudItem xs="12" sm="6">
+                    <MudTextField T="string" Label="Estado Solicitud" Value="@("TRAMITE EN PROCESO")" ReadOnly="true" Disabled="true" Dense="true" />
+                </MudItem>
+                -->
+                <MudItem xs="12" sm="6">
+                    <MudTextField Label="N° Expediente" @bind-Value="solDTO.NroExpediente" Dense="true" Required="true" />
+                </MudItem>
+                <MudItem xs="12" sm="6">
+                    <MudDatePicker Label="Fecha Expediente" @bind-Date="solDTO.FechaExpediente"
+                                   Dense="true"
+                                   Editable="true"
+                                   Mask="@(new DateMask("dd/MM/yyyy"))"
+                                   DateFormat="dd/MM/yyyy"
+                                   Required="true"
+                                   Placeholder="dd/mm/yyyy" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudTextField Label="Punto Ubicacion" @bind-Value="solDTO.PuntoLocal" Dense="true" Required="true" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="string" Label="Zonificacion" @bind-Value="solDTO.idTipoZonificacion" Required="true">
+                        @foreach(var i in lstZonificacion) {
+                            <MudSelectItem Value="@(i.idTipoZonif)">@i.descripcion</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="int?" Label="Giro Principal"
+                               Value="selectedPrincipalId"
+                               ValueChanged="OnPrincipalChanged"
+                               Required="true">
+                        <MudSelectItem Value="@( (int?)null )" Disabled="true">Seleccione:</MudSelectItem>
+
+                        @foreach(var item in girosPrincipales) {
+                            <MudSelectItem Value="@( (int?)item.IdGiroPrincipal )">@item.Nombre</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="int?" Label="Giro Complementario"
+                               Value="selectedComplementarioId"
+                               ValueChanged="OnComplementarioChanged"
+                               Disabled="comboComplementarioDisabled">
+                        <MudSelectItem Value="@( (int?)null )" Disabled="true">Seleccione:</MudSelectItem>
+
+                        @foreach(var item in girosComplementarios) {
+                            <MudSelectItem Value="@( (int?)item.IdGiroComplementario )">@item.Nombre</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="int?" Label="Detalle Giro"
+                               @bind-Value="selectedDetalleId"
+                               Disabled="comboDetalleDisabled">
+                        <MudSelectItem Value="@( (int?)null )" Disabled="true">Seleccione:</MudSelectItem>
+
+                        @foreach(var item in girosDetalle) {
+                            <MudSelectItem Value="@( (int?)item.IdDetalleGiro )">@item.Nombre</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+
+            </MudGrid>
+            <!-- Panel: Zona -->
+            <MudText Typo="Typo.subtitle2" Class="mt-6 mb-2 text-muted">🗺️ Zona</MudText>
+            <MudDivider Class="mb-3" />
+            <MudPaper Class="p-3 bg-grey-lighten-4 rounded-lg" Elevation="0">
+                <div class="d-flex justify-between align-items-center mb-2">
+                    <MudText Typo="Typo.subtitle1" Class="fw-bold">Zona Seleccionada:</MudText>
+                    <MudIconButton Icon="@Icons.Material.Filled.Business" Color="Color.Primary" ToolTip="Marcador"
+                                   OnClick="@(() => AbriDialogZonasMaps())" />
+                </div>
+                <MudText Typo="Typo.body2"><strong>SubZona:</strong> @nombSubZona</MudText>
+            </MudPaper>
+
+            <!-- Panel: Solicitante -->
+            <MudText Typo="Typo.subtitle2" Class="mt-6 mb-2 text-muted">👤 Solicitante</MudText>
+            <MudDivider Class="mb-3" />
+            <MudPaper Class="p-3 bg-grey-lighten-4 rounded-lg" Elevation="0">
+                <div class="d-flex justify-between align-items-center mb-2">
+                    <MudText Typo="Typo.subtitle1" Class="fw-bold">Solicitante Seleccionado</MudText>
+                    <MudIconButton Icon="@Icons.Material.Filled.PersonAdd" Color="Color.Primary" ToolTip="Seleccionar Solicitante"
+                                   OnClick="@(() => AbrirDialogoCustom())" />
+                </div>
+                <MudText Typo="Typo.body2"><strong>Nombre:</strong> @dSoli.nombre</MudText>
+                <MudText Typo="Typo.body2"><strong>DNI:</strong> @dSoli.nrodni</MudText>
+                <MudText Typo="Typo.body2"><strong>Teléfono:</strong> @dSoli.telefono</MudText>
+            </MudPaper>
+
+            <!-- Horario de Funcionamiento -->
+            <MudText Typo="Typo.h6" Class="mt-6 mb-2">🕒 Horario de Funcionamiento:</MudText>
+            <MudDivider Class="mb-3" />
+            <div class="d-flex justify-center mt-4">
+                <MudPaper Class="p-4" Style="width: 700px;">
+                    <MudTable Items="horarios" T="HorarioItem" Elevation="2" Dense="true">
+                        <HeaderContent>
+                            <MudTh style="width: 40%;">Frecuencia</MudTh>
+                            <MudTh style="width: 25%;">Desde</MudTh>
+                            <MudTh style="width: 25%;">Hasta</MudTh>
+                            <MudTh style="width: 10%; text-align:center;">
+                                <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Success" OnClick="AgregarHorario" />
+                            </MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd>
+                                <MudTextField @bind-Value="context.Frecuencia" Placeholder="Ej: Domingo a Jueves" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </MudTd>
+                            <MudTd>
+                                <MudTextField @bind-Value="context.Desde" InputType="InputType.Time" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </MudTd>
+                            <MudTd>
+                                <MudTextField @bind-Value="context.Hasta" InputType="InputType.Time" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                            </MudTd>
+                            <MudTd Class="text-center">
+                                <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Error" OnClick="@(() => EliminarHorario(context))" />
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudPaper>
+            </div>
+
+
+            <!-- Botón de acción final -->
+            <MudGrid>
+                <MudItem xs="12" Class="d-flex justify-end mt-6">
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="FinalizarSolicitud2"
+                               StartIcon="@Icons.Material.Filled.CheckCircle" Size="Size.Large" Class="px-6">
+                        Completar Solicitud
+                    </MudButton>
+                </MudItem>
+
+            </MudGrid>
+        </MudPaper>
+
+
+    </MudForm>
+
+</MudContainer>
+
+
+
+
+

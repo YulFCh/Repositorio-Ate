@@ -1,0 +1,366 @@
+﻿@using System.Text.Json
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+@using SistemaLicencias.SHARED.DTOs
+
+<MudDialog Class="max-w-5xl w-full mud-typography-body3" MaxWidth="MaxWidth.Large">
+    <DialogContent>
+        @if(isLoading) {
+            <div class="pa-4">
+                <div class="text-center py-6">
+                    <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Medium" Class="mb-3" />
+                    <MudText Typo="Typo.body2">Cargando detalles del anuncio...</MudText>
+                </div>
+                <MudSkeleton Height="28px" Class="mb-2" />
+                <MudSkeleton Height="18px" Class="mb-1" />
+                <MudSkeleton Height="18px" Class="mb-1" />
+                <MudSkeleton Height="220px" Class="mt-3" />
+            </div>
+        }
+        else if(error is not null) {
+            <div class="pa-4">
+                <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Error">
+                    <MudText Typo="Typo.body2">Error al cargar los datos</MudText>
+                    <MudText Typo="Typo.caption">@error</MudText>
+                </MudAlert>
+                <div class="text-center mt-3">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                               OnClick="ReloadData" EndIcon="@Icons.Material.Filled.Refresh">
+                        Reintentar
+                    </MudButton>
+                </div>
+            </div>
+        }
+        else if(data is null) {
+            <div class="pa-4">
+                <MudAlert Severity="Severity.Warning" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Warning">
+                    No se encontraron datos del anuncio.
+                </MudAlert>
+            </div>
+        }
+        else {
+            <!-- Header con identificación del anuncio -->
+            <div class="pa-4 pb-2" style="background-color: #f8f9fa; border-bottom: 1px solid #e0e0e0;">
+                <div class="d-flex align-start justify-space-between flex-wrap">
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-center mb-1">
+                            <MudIcon Icon="@Icons.Material.Filled.AdsClick" Color="Color.Primary" Class="me-2" />
+                            <MudText Typo="Typo.h6" Class="font-weight-bold primary--text">
+                                Detalle de Anuncio
+                            </MudText>
+
+                        </div>
+
+
+                    </div>
+
+                    <div class="d-flex flex-column flex-sm-row" style="gap: 8px; margin-top: 8px;">
+                        <MudTooltip Text="Abrir en Google Maps" Placement="Placement.Top">
+                            <MudButton Variant="Variant.Filled" Color="Color.Info" Size="Size.Small"
+                                       StartIcon="@Icons.Material.Filled.Map"
+                                       OnClick="OpenMaps" Disabled="@(string.IsNullOrWhiteSpace(data.CoordLngLat))">
+                                Mapa
+                            </MudButton>
+                        </MudTooltip>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pa-4">              
+
+                <MudGrid Spacing="2">
+                    <!-- Tipos -->
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudPaper Class="pa-3 rounded-lg h-100" Elevation="1">
+                            <div class="d-flex align-center mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.Straighten" Color="Color.Primary" Class="me-2" Size="Size.Small" />
+                                <MudText Typo="Typo.subtitle2" Class="font-weight-bold">Detalles EPE</MudText>
+                            </div>
+                            <MudList T="string">
+                                <MudListItem Text="4.1:" SecondaryText="@ShowNum(data.TipoUbicacion)" />
+                                <MudListItem Text="4.2:" SecondaryText="@ShowNum(data.TipoElemento)" />
+                                <MudListItem Text="4.3:" SecondaryText="@ShowNum(data.TipoCaracteristica)" />
+                                <MudListItem Text="4.4:" SecondaryText="@Show(data.TipoEstructura)" />
+                                <MudListItem Text="4.5:" SecondaryText="@Show(data.TipoMaterial)" />
+                            </MudList>
+                        </MudPaper>
+                    </MudItem>
+                    <!-- Dimensiones -->
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudPaper Class="pa-3 rounded-lg h-100" Elevation="1">
+                            <div class="d-flex align-center mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.Straighten" Color="Color.Primary" Class="me-2" Size="Size.Small" />
+                                <MudText Typo="Typo.subtitle2" Class="font-weight-bold">Dimensiones</MudText>
+                            </div>
+                            <MudList T="string">
+                                <MudListItem Text="Alto (cm):" SecondaryText="@ShowNum(data.Altoa)" />
+                                <MudListItem Text="Ancho (cm):" SecondaryText="@ShowNum(data.Ancho)" />
+                                <MudListItem Text="Área (cm²):" SecondaryText="@ShowNum(data.Area)" />
+                                <MudListItem Text="Nro. Caras:" SecondaryText="@Show(data.Nrocaras)" />
+                            </MudList>
+                        </MudPaper>
+                    </MudItem>
+
+                    <!-- Ubicación -->
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudPaper Class="pa-3 rounded-lg h-100" Elevation="1">
+                            <div class="d-flex align-center mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.LocationOn" Color="Color.Primary" Class="me-2" Size="Size.Small" />
+                                <MudText Typo="Typo.subtitle2" Class="font-weight-bold">Ubicación</MudText>
+                            </div>
+                            <MudList T="string">
+                                <MudListItem Text="Zona Urbana:" SecondaryText="@Show(data.ZonaUrbana)" />
+                                <MudListItem Text="Zonificación:" SecondaryText="@Show(data.Zonificacion)" />
+                                <MudListItem Text="Coordenadas:" SecondaryText="@Show(data.CoordLngLat)" />
+                                <MudListItem Text="Distrito:" SecondaryText="@Show(data.Direccion)" />
+                            </MudList>
+                        </MudPaper>
+                    </MudItem>
+
+                    <!-- Contribuyente -->
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudPaper Class="pa-3 rounded-lg h-100" Elevation="1">
+                            <div class="d-flex align-center mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.Person" Color="Color.Primary" Class="me-2" Size="Size.Small" />
+                                <MudText Typo="Typo.subtitle2" Class="font-weight-bold">Contribuyente</MudText>
+                            </div>
+                            <MudList T="string">
+                                <MudListItem Text="Solicitante:" SecondaryText="@Show(data.Nombre)" />
+                                <MudListItem Text="Razón Social:" SecondaryText="@Show(data.Razsocial)" />
+                            </MudList>
+                        </MudPaper>
+                    </MudItem>
+
+                    <!-- Licencia -->
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudPaper Class="pa-3 rounded-lg h-100" Elevation="1">
+                            <div class="d-flex align-center mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.Assignment" Color="Color.Primary" Class="me-2" Size="Size.Small" />
+                                <MudText Typo="Typo.subtitle2" Class="font-weight-bold">Licencia</MudText>
+                            </div>
+                            <MudList T="string">
+                                <MudListItem Text="N° Licencia:" SecondaryText="@Show(data.NroLicencia)" />
+                                <MudListItem Text="Año Licencia:" SecondaryText="@Show(data.Anio)" />
+                                <MudListItem Text="Distrito Licencia:" SecondaryText="@Show(data.Distrito)" />
+                            </MudList>
+                        </MudPaper>
+                    </MudItem>
+
+                    <!-- Horario -->
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudPaper Class="pa-3 rounded-lg h-100" Elevation="1">
+                            <div class="d-flex align-center mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.Schedule" Color="Color.Primary" Class="me-2" Size="Size.Small" />
+                                <MudText Typo="Typo.subtitle2" Class="font-weight-bold">Horario</MudText>
+                            </div>
+                            @if(TryParseHorario(data.Horario, out var horarioKvp)) {
+                                <MudList T="string">
+                                    @foreach(var kv in horarioKvp) {
+                                        <MudListItem Text="@(@kv.Key)" SecondaryText="@kv.Value" />
+                                    }
+                                </MudList>
+                            }
+                            else {
+                                <MudText Typo="Typo.body2">@Show(data.Horario)</MudText>
+                            }
+                        </MudPaper>
+                    </MudItem>
+
+                    <!-- Vigencia -->
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudPaper Class="pa-3 rounded-lg h-100" Elevation="1">
+                            <div class="d-flex align-center mb-2">
+                                <MudIcon Icon="@Icons.Material.Filled.EventAvailable" Color="Color.Primary" Class="me-2" Size="Size.Small" />
+                                <MudText Typo="Typo.subtitle2" Class="font-weight-bold">Vigencia</MudText>
+                            </div>
+                            <MudList T="string">
+                                <MudListItem Text="Fecha de Vigencia:" SecondaryText="@ShowDate(data.FechaVigencia)" />
+                                <MudListItem>
+                                    <MudChip T="string" Color="@(IsVigente(data.FechaVigencia) ? Color.Success : Color.Error)"
+                                             Variant="Variant.Filled" Size="Size.Small"
+                                             Icon="@(IsVigente(data.FechaVigencia) ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Error)">"@(IsVigente(data.FechaVigencia) ? "Vigente" : "Expirado")"</MudChip>
+                                </MudListItem>
+                            </MudList>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            </div>
+        }
+    </DialogContent>
+
+    <DialogActions>
+        <MudText Typo="Typo.caption" Class="opacity-80 me-auto">
+            Última actualización: <b>@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</b>
+        </MudText>
+        <MudButton Variant="Variant.Text" Color="Color.Primary"
+                   OnClick="() => MudDialog.Close(DialogResult.Ok(true))"
+                   EndIcon="@Icons.Material.Filled.Close">
+            Cerrar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public int IdAnuncio { get; set; }
+
+    private AnuncioDetalleDto data;
+    private bool isLoading = true;
+    private string? error;
+    //private string _baseUrl = "http://localhost:5297";
+    private string _baseUrl = "http://192.168.4.225:181";
+
+    protected override async Task OnInitializedAsync() {
+        await LoadData();
+    }
+
+    private async Task LoadData() {
+        isLoading = true;
+        error = null;
+        StateHasChanged();
+
+        try {
+
+            var url = $"{_baseUrl}/api/Consultas/lstopcion?opc=1&id={IdAnuncio}";
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true, WriteIndented = true };
+
+            var env = await Http.GetFromJsonAsync<ApiEnvelope<List<AnuncioDetalleDto>>>(url, options);
+
+
+
+            data = env?.Resultado?.FirstOrDefault();
+
+
+
+            if(data == null) {
+                error = "No se encontraron datos para el anuncio solicitado";
+            }
+        }
+        catch(Exception ex) {
+            error = $"Error al cargar los datos: {ex.Message}";
+            Snackbar.Add($"Error: {ex.Message}", Severity.Error);
+        }
+        finally {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ReloadData() {
+        await LoadData();
+    }
+
+    private async Task CopyCoords() {
+        var coords = data?.CoordLngLat;
+        if(string.IsNullOrWhiteSpace(coords)) {
+            Snackbar.Add("No hay coordenadas disponibles", Severity.Info);
+            return;
+        }
+
+        try {
+            // Usamos JS interop para copiar al portapapeles
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", coords);
+            Snackbar.Add("Coordenadas copiadas al portapapeles", Severity.Success);
+        }
+        catch {
+            Snackbar.Add("No se pudieron copiar las coordenadas", Severity.Error);
+        }
+    }
+
+    private async Task OpenMaps() {
+        if(string.IsNullOrWhiteSpace(data?.CoordLngLat)) {
+            Snackbar.Add("No hay coordenadas disponibles", Severity.Info);
+            return;
+        }
+
+        var (lat, lng) = ParseLatLng(data.CoordLngLat);
+        if(!string.IsNullOrEmpty(lat) && !string.IsNullOrEmpty(lng)) {
+            var url = $"https://www.google.com/maps?q={lng},{lat}";
+            Console.WriteLine(lng + " | " + lat);
+            await JSRuntime.InvokeVoidAsync("open", url, "_blank");
+        }
+        else {
+            Snackbar.Add("Coordenadas no válidas", Severity.Warning);
+        }
+    }
+
+    // Helpers de presentación
+    string Show(string? s) => string.IsNullOrWhiteSpace(s) ? "No especificado" : s.Trim();
+
+    string ShowDate(string? s) {
+        if(string.IsNullOrWhiteSpace(s)) return "No especificada";
+
+        // Intentar parsear la fecha para formatearla correctamente
+        if(DateTime.TryParseExact(s, "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None, out DateTime date)) {
+            return date.ToString("dd/MM/yyyy");
+        }
+
+        return s; // Devolver el valor original si no se puede parsear
+    }
+
+    string ShowNum(string? s) {
+        if(decimal.TryParse(s, out var n)) return n.ToString("0.##");
+        return Show(s);
+    }
+
+    (string lat, string lng) ParseLatLng(string coordLngLat) {
+        try {
+            var parts = coordLngLat.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if(parts.Length >= 2) {
+                // Asumiendo formato: longitud,latitud
+                return (parts[1], parts[0]);
+            }
+        }
+        catch { }
+        return ("", "");
+    }
+
+    bool TryParseHorario(string? raw, out Dictionary<string, string> dict) {
+        dict = new();
+        if(string.IsNullOrWhiteSpace(raw)) return false;
+
+        try {
+            var d = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(raw);
+            if(d is null || d.Count == 0) return false;
+            dict = d;
+            return true;
+        }
+        catch {
+            // Intentar parsear formatos alternativos
+            if(raw.Contains(":")) {
+                var lines = raw.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach(var line in lines) {
+                    var parts = line.Split(':');
+                    if(parts.Length >= 2) {
+                        dict[parts[0].Trim()] = parts[1].Trim();
+                    }
+                }
+                return dict.Count > 0;
+            }
+            return false;
+        }
+    }
+
+    bool IsVigente(string? fechaVigencia) {
+        if(string.IsNullOrWhiteSpace(fechaVigencia)) return false;
+
+        if(DateTime.TryParseExact(fechaVigencia, "dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None, out DateTime fecha)) {
+            return fecha >= DateTime.Today;
+        }
+
+        return false;
+    }
+
+    // Envelope + DTO
+    public class ApiEnvelope<T> {
+        public string? Mensaje { get; set; }
+        public T? Resultado { get; set; }
+    }
+
+
+}

@@ -1,0 +1,114 @@
+﻿@using MudBlazor
+@inject IDialogService DialogService
+@inject IGirosService GiroService
+@using SistemaLicencias.SHARED.DTOs
+@using SISFRONT.Components.Utilities;
+@using SISFRONT.Components.Dialogs;
+
+<MudPaper Class="p-6  mt-4" Style="background-color:#ffffff;">
+    <MudText Typo="Typo.h5" Class="mb-4 text-primary">🧾 Registro de Giro Complementario</MudText>
+
+    <MudGrid Spacing="3">
+        <!-- Combo de giro principal -->
+        <MudItem xs="12">
+            <MudSelect T="int?" Label="Giro Principal"
+                       FullWidth="true"
+                       @bind-Value="selectedPrincipalId"
+                       @bind-Value:event="onchange"
+                       ValueChanged="OnPrincipalChanged"
+                       Required="true"
+                       Dense="true">
+                <MudSelectItem Value="@( (int?)null )" Disabled="true">Seleccione:</MudSelectItem>
+                @foreach(var item in girosPrincipales) {
+                    <MudSelectItem Value="@( (int?)item.IdGiroPrincipal )">@item.Nombre</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+
+        <!-- Textfield nombre giro complementario -->
+        <MudItem xs="12">
+            <MudTextField Label="Nombre del Giro Complementario" Dense="true" @bind-Value="giroFlexible.Nombre" />
+        </MudItem>
+
+        <!-- Estado (radio group) -->
+        <MudItem xs="12" Class="mt-2">
+            <MudRadioGroup @bind-Value="giroFlexible.Estado" Row="true" Label="Estado del Giro">
+                <MudRadio Value="1">Activo</MudRadio>
+                <MudRadio Value="0">Inactivo</MudRadio>
+            </MudRadioGroup>
+        </MudItem>
+
+        <!-- Botón centrado -->
+        <MudItem xs="12" Class="d-flex justify-center mt-4">
+            <MudButton Color="Color.Success"
+                       Variant="Variant.Filled"
+                       Class="px-5 py-2"
+                       Style="min-width: 160px; font-weight: bold;"
+                       OnClick="Guardar">
+                💾 Guardar
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+
+@code {
+    private bool isSaving = false;
+    private List<GiroPrincipal> girosPrincipales = new();
+    private List<GiroComplementario> girosComplementarios = new();
+    //dto
+    private GiroFlexible giroFlexible = new();
+
+    // Ids seleccionados - giros    
+    private int? selectedPrincipalId = null;
+    private int? selectedComplementarioId = null;
+  
+
+    protected override async Task OnInitializedAsync() {
+        await LoadComboPrincipal();
+    }
+
+    private async Task LoadComboPrincipal() {
+        girosPrincipales = await GiroService.ObtenerGirosPrincipalesAsync();
+    }
+
+   
+    private async Task OnPrincipalChanged(int? newValue) {
+        selectedPrincipalId = newValue;
+        selectedComplementarioId = null;
+
+        
+    }
+
+  
+    private async Task Guardar() {
+        isSaving = true;
+
+        try {
+            var request = new GiroFlexible {
+                    TipoRegistro = 2,
+                    Nombre = giroFlexible.Nombre,
+                    Estado = giroFlexible.Estado,
+                    IdGiroPrincipal = selectedPrincipalId,
+                    IdGiroComplementario = null
+                };
+
+            var (success, message) = await GiroService.InsertGiroAsync(request);
+
+            if(success) {
+                giroFlexible.Nombre = "";
+                giroFlexible.Estado = 0;
+                await DialogService.ShowMessageBox("Éxito", message);
+            }
+            else {
+                await DialogService.ShowMessageBox("Error", message);
+            }
+        }
+        catch(Exception ex) {
+            await DialogService.ShowMessageBox("Error", $"🧨 Excepción: {ex.Message}");
+        }
+        finally {
+            isSaving = false;
+        }
+    }
+}

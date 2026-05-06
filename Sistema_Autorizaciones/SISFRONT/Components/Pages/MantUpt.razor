@@ -1,0 +1,140 @@
+﻿@page "/mant-modificar"
+@using MudBlazor
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+@inject ProtectedSessionStorage SessionStorage
+@inject IHttpContextAccessor HttpContextAccessor
+@inject SessionService sessions
+@inject IJSRuntime JS
+@using SistemaLicencias.SHARED.DTOs
+@using SISFRONT.Components.Utilities
+@using SISFRONT.Components.Dialogs
+
+
+
+<MudContainer MaxWidth="MaxWidth.Large">
+    <MudPaper Class="p-4 my-4" Elevation="0">
+        <MudText Typo="Typo.h5" Class="mb-3">📋 Mantenimiento de Capacidad por Subzona</MudText>
+
+        <!-- Selección de zona -->
+        <MudSelect T="int" Label="Selecciona una zona" @bind-Value="_zonaSeleccionada" @bind-Value:after="OnZonaChanged" Dense="true" Class="mb-3">
+            <MudSelectItem Disabled="true" Value="0">Seleccione:</MudSelectItem>
+            @foreach(var zona in Zonas) {
+                <MudSelectItem Value="@zona.IdZona">@zona.Nombre</MudSelectItem>
+            }
+        </MudSelect>
+
+
+        <!-- Tabla de subzonas -->
+        @if(SubzonasFiltradas.Any()) {
+            <MudTable Items="SubzonasFiltradas" Hover="true" Bordered="true" Dense="true"
+                      RowClassFunc="@( (s, i) => s.Ocupados >= s.CapacidadTotal ? "subzona-llena" : s.Ocupados == 3 ? "subzona-ambar" : null )">
+                <HeaderContent>
+                    <MudTh>Subzona</MudTh>
+                    <MudTh>Capacidad Base</MudTh>
+                    <MudTh>Capacidad Extra</MudTh>
+                    <MudTh>Total </MudTh>
+                    <MudTh>Editar</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.Nombre</MudTd>
+                    <MudTd>@context.CapacidadBase</MudTd>
+                    <MudTd>@context.CapacidadExtra</MudTd>
+                    <MudTd>@context.Ocupados /@context.CapacidadTotal</MudTd>
+                    <MudTd>
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="() => SeleccionarParaEditar(context)" />
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new int[] {10, 20, 50}" />
+                </PagerContent>
+            </MudTable>
+        }
+
+        <!-- Formulario para editar capacidad -->
+        @if(_subzonaSeleccionada != null) {
+            <MudDivider Class="my-4" />
+            <MudText Typo="Typo.h6">Modificar Capacidad Extra de: <strong>@_subzonaSeleccionada.Nombre</strong></MudText>
+
+            <MudNumericField @bind-Value="_subzonaSeleccionada.CapacidadExtra"
+                             Label="Capacidad Extra"
+                             Min="0"
+                             Variant="Variant.Outlined"
+                             Class="my-2" />
+
+            <MudButton Variant="Variant.Filled" Color="Color.Success" Class="mt-2" OnClick="@GuardarCambios">💾 Guardar Cambios</MudButton>
+        }
+    </MudPaper>
+</MudContainer>
+<style>
+    .subzona-llena {
+        background-color: #ff7070 !important; /* rojo claro */
+    }
+
+    .subzona-ambar {
+        background-color: #fff3cd !important; /* amarillo claro */
+    }
+
+    .subzona-verde {
+        background-color: #e0f7e9 !important; /* verde claro*/
+    }
+
+</style>
+@code {
+    private string _baseUrl = "http://192.168.0.139:148";
+    //private string _baseUrl = "http://localhost:5297";
+    private int _zonaSeleccionada = 0;
+    private string searchTerm = "";
+    private List<ZonasAutApi> Zonas = new();
+    private List<SubZonasAutApi> subzonas = new();
+    private SubZonasAutApi? _subzonaSeleccionada;
+
+
+    protected override async Task OnInitializedAsync() {
+        var rs = await Http.GetFromJsonAsync<ZonasAutDTO>($"{_baseUrl}/api/Solicitud/getzonam");
+        
+        Zonas = rs.response;
+    }
+
+
+    private async Task OnZonaChanged() {
+        if(_zonaSeleccionada == 0)
+            return;
+
+        var wa = await Http.GetFromJsonAsync<SubZonasAutDTO>($"{_baseUrl}/api/MarkMaps/getall/{_zonaSeleccionada}");
+        subzonas = wa.response;
+        Console.WriteLine($"{subzonas.Count()}");
+
+    }
+
+    private async Task SeleccionarParaEditar(SubZonasAutApi subzona) {
+        var parameters = new DialogParameters { ["Subzona"] = subzona };
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+
+        var dialog = DialogService.Show<DialogEditarSubzona>("Editar Capacidad", parameters, options);
+        var result = await dialog.Result;
+
+        if(!result.Canceled) {
+            var subzonaEditada = (SubZonasAutApi)result.Data;
+            Console.WriteLine($"🟢 Subzona actualizada: {subzonaEditada.Nombre}, Extra = {subzonaEditada.CapacidadExtra}");
+            StateHasChanged(); // refrescar tabla si es necesario
+        }
+    }
+
+
+    private IEnumerable<SubZonasAutApi> SubzonasFiltradas => subzonas
+        .Where(x => string.IsNullOrWhiteSpace(searchTerm) ||
+                    (!string.IsNullOrWhiteSpace(x.Nombre) && x.Nombre.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
+
+    
+
+    private void GuardarCambios() {
+        Console.WriteLine($"💾 Subzona {_subzonaSeleccionada?.Nombre} actualizada a Extra = {_subzonaSeleccionada?.CapacidadExtra}");
+        _subzonaSeleccionada = null;
+    }
+
+  
+
+   
+}

@@ -1,0 +1,167 @@
+﻿@inject HttpClient Http
+@using SistemaLicencias.SHARED.DTOs
+
+<MudDialog>
+    <DialogContent>
+        @if(isLoading) {
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" Class="d-block mx-auto my-6" />
+        }
+
+        else {
+            <MudTable T="SolicitanteAPI"
+                      Items="filteredSolicitantes"
+                      Dense="true"
+                      RowsPerPage="20"
+                      
+                      Hover="true"
+                      Bordered="true"
+                      Elevation="1"
+                      Class="mt-2 mb-5">
+
+                <ToolBarContent>
+                    <MudTextField @bind-Value="searchTerm"
+                                  Placeholder="Buscar por nombre o DNI"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Search"
+                                  IconSize="Size.Medium"
+                                  Class="mt-0 w-50 me-4 mt-4" />
+
+                    <MudDatePicker @bind-Date="selectedDate"
+                                   Label="Filtrar por fecha"
+                                   Class="mt-0"
+                                   DateFormat="yyyy-MM-dd"
+                                   DisableToolbar="true"
+                                   Clearable="true"
+                                   Adornment="Adornment.Start"
+                                   AdornmentIcon="@Icons.Material.Filled.Event" />
+                </ToolBarContent>
+
+
+                <HeaderContent>
+                    <MudTh>Nombre</MudTh>
+                    <MudTh>DNI</MudTh>
+                    <MudTh>Teléfono</MudTh>
+                    <MudTh>Fecha Registro</MudTh>
+                    <MudTh>Tipo Doc</MudTh>
+                    <MudTh>Add</MudTh>
+                </HeaderContent>
+
+                <RowTemplate>
+                    <MudTd>@context.nombre</MudTd>
+                    <MudTd>@context.nrodni</MudTd>
+                    <MudTd>@context.telefono</MudTd>
+                    <MudTd>@context.fecharegistro?.ToString("yyyy-MM-dd")</MudTd>
+                    <MudTd>@GetTipoDocLabel(context.tipo_doc)</MudTd>
+                    <MudTd>
+
+                        <MudIconButton Icon="@Icons.Material.Filled.Add"
+                                       Color="Color.Success"
+                                       OnClick="@(() => SeleccionarSolicitante(context))"  Size="Size.Small"/>
+
+
+                    </MudTd>
+                </RowTemplate>
+
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+
+            </MudTable>
+
+        }
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Cerrar" Color="Color.Secondary">Cancelar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public EventCallback<string> OnSeleccionarGiro { get; set; }
+
+    private string _baseUrl = "http://192.168.0.139:148";
+    //private string _baseUrl = "http://localhost:5297";
+    private bool isLoading = true;
+    private List<string> listaGiros;
+    private List<SolicitanteAPI> solicitantes = new();
+    private List<EstablecimientoAPI> establecimientos = new();
+    private string searchTerm = "";
+    private DateTime? selectedDate = null;
+
+
+    protected override async Task OnInitializedAsync() {
+
+        try {
+            var responseSolicitante = await Http.GetFromJsonAsync<ApiResponse>($"{_baseUrl}/api/Solicitante/getall");
+
+            if(responseSolicitante?.response != null) {
+                solicitantes = responseSolicitante.response;
+            }
+            else {
+                Console.WriteLine("No se recibió ninguna lista de solicitantes o la respuesta es vacía.");
+            }
+        }
+        catch(Exception ex) {
+            Console.WriteLine($"Error al consultar solicitantes: {ex.Message}");
+        }
+        finally {
+            isLoading = false;
+        }
+
+
+
+    }
+
+
+    private IEnumerable<SolicitanteAPI> filteredSolicitantes => solicitantes.Where(x => {
+        bool matchesText = string.IsNullOrWhiteSpace(searchTerm)
+            || (!string.IsNullOrWhiteSpace(x.nombre) && x.nombre.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+            || (!string.IsNullOrWhiteSpace(x.nrodni) && x.nrodni.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+
+        bool matchesDate = !selectedDate.HasValue
+            || (x.fecharegistro.HasValue && x.fecharegistro.Value.Date == selectedDate.Value.Date);
+
+        return matchesText && matchesDate;
+    });
+
+    private IEnumerable<EstablecimientoAPI> filteredEstable => establecimientos.Where(x => {
+        bool matchesText = string.IsNullOrWhiteSpace(searchTerm)
+            || (!string.IsNullOrWhiteSpace(x.nombreContrib) && x.nombreContrib.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+            || (!string.IsNullOrWhiteSpace(x.direcPred) && x.direcPred.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+
+        return matchesText; //&& matchesDate;
+    });
+
+
+
+    private async Task Seleccionar(string giro) {
+        await OnSeleccionarGiro.InvokeAsync(giro);
+        MudDialog.Close();
+    }
+
+    private void SeleccionarSolicitante(SolicitanteAPI solicitante) {
+        MudDialog.Close(DialogResult.Ok(solicitante));
+    }
+
+    private void SeleccionarEstablecimiento(EstablecimientoAPI est) {
+        MudDialog.Close(DialogResult.Ok(est));
+    }
+
+
+    private void Cerrar() {
+        MudDialog.Cancel();
+    }
+
+    private string GetTipoDocLabel(int tipoDoc) {
+        return tipoDoc switch {
+            1 => "DNI",
+            2 => "Carné",
+            3 => "Pasaporte",
+            _ => "-"
+        };
+    }
+}

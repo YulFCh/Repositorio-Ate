@@ -1,0 +1,59 @@
+﻿@page "/mant-giros2"
+@using MudBlazor
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+@inject SessionService sessions
+@using SistemaLicencias.SHARED.DTOs
+@using SISFRONT.Components.Utilities;
+@using SISFRONT.Components.Dialogs;
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="my-4 mx-auto">
+    <MudPaper Elevation="0" Class="p-4 ">
+        <MudTabs Centered="true" >
+            <MudTabPanel Text="📥 Registrar Giros" Class="mud-text-primary">
+                <MudTabs  Centered="true" >
+                    <MudTabPanel Text="🏛 Principal">
+                        <FormGiroPrincipal />
+                    </MudTabPanel>
+                    <MudTabPanel Text="📚 Complementario">
+                        <FormGiroComplementario />
+                    </MudTabPanel>
+                    <MudTabPanel Text="📋 Detalle">
+                        <FormGiroDetalle />
+                    </MudTabPanel>
+                </MudTabs>
+            </MudTabPanel>
+
+            <MudTabPanel Text="🛠 Modificar Giros" Class="mud-text-primary">
+                <MudTabs  Centered="true">
+                    <MudTabPanel Text="🏛 Principal">
+                        <TablaGiroPrincipal />
+                    </MudTabPanel>
+                    <MudTabPanel Text="📚 Complementario">
+                        <TablaGiroComplementario />
+                    </MudTabPanel>
+                    <MudTabPanel Text="📋 Detalle">
+                        <TablaGiroDetalle />
+                    </MudTabPanel>
+                </MudTabs>
+            </MudTabPanel>
+        </MudTabs>
+    </MudPaper>
+</MudContainer>
+
+
+<style>
+    .mud-tabs {
+        background-color: #e9f0ff;
+        
+        padding: 0.5rem;
+                
+    }
+
+    .mud-tab.mud-tab-active {
+        font-weight: bold;
+        border-bottom: 3px solid #1976d2;
+    }
+
+</style>

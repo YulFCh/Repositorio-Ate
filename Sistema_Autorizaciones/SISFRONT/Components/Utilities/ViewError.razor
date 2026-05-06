@@ -1,0 +1,45 @@
+﻿@page "/aviso"
+@layout Layout.EmptyLayout
+@using MudBlazor
+@inject NavigationManager nav
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="d-flex flex-column justify-center align-center" Style="min-height: 100vh;min-width:100vh;">
+
+    <MudText Typo="Typo.h2" Align="Align.Center" Class="mb-2" Style="font-weight: bold;">
+        WHOOPS!
+    </MudText>
+
+    <MudText Typo="Typo.subtitle1" Align="Align.Center" Class="mb-6" Style="opacity: 0.8;">
+        Algo salió mal. Esto es un poco incómodo.
+    </MudText>
+
+    <MudButton Variant="Variant.Outlined"
+               Color="Color.Default"
+               Style="border-radius: 25px; padding: 10px 30px;"
+               OnClick="@VolverInicio">
+        Ir al inicio
+    </MudButton>
+
+    <MudSpacer />
+
+    <!-- Footer estilo barra inferior
+    <MudGrid Class="mt-12" Gutter="0" Style="border-top: 1px solid #444; width: 100%;">
+        <MudItem xs="4">
+            <MudText Align="Align.Center" Class="py-4">🔍 Look around</MudText>
+        </MudItem>
+        <MudItem xs="4">
+            <MudText Align="Align.Center" Class="py-4">📬 Get in touch</MudText>
+        </MudItem>
+        <MudItem xs="4">
+            <MudText Align="Align.Center" Class="py-4">📚 Resources</MudText>
+        </MudItem>
+         
+    </MudGrid>
+    -->
+</MudContainer>
+
+@code {
+    private void VolverInicio() {
+        nav.NavigateTo("/");
+    }
+}

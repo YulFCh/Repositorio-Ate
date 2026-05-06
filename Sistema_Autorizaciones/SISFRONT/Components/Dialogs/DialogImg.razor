@@ -1,0 +1,95 @@
+﻿@inject IDialogService DialogService
+
+<MudDialog MaxWidth="MaxWidth.ExtraSmall" DisableFocusTrap="true" NoAutoFocus="true">
+
+    <DialogContent>
+
+
+
+        <MudFileUpload T="IBrowserFile" FilesChanged="UploadFiles" AcceptedFormats="image/*">
+            <ActivatorContent>
+                <MudFab Color="Color.Secondary"
+                        StartIcon="@Icons.Material.Filled.Image"
+                        Label="Seleccionar Foto"
+                        Size="Size.Small"
+                        Class="mb-3" />
+            </ActivatorContent>
+        </MudFileUpload>
+
+
+        @if(previewImage != null) {
+            <MudPaper Elevation="2" Class="d-flex justify-center pa-2" Style="border-radius: 10px;">
+                <img src="@previewImage"
+                     style="max-height: 180px; max-width: 100%; border-radius: 8px;" />
+            </MudPaper>
+        }
+
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="() => EnviarTipo(file,tipo1)"
+                   Color="Color.Primary" Disabled="@(!hasImage)">
+            Usar Foto
+        </MudButton>
+        <MudButton OnClick="() => EnviarTipo(null,tipo2)"
+                   Color="Color.Info">
+            Ver Plantilla
+        </MudButton>
+
+        <MudButton OnClick="() => EnviarTipo(null, tipo3)"
+                   Color="Color.Info">
+            Sin Diseño
+        </MudButton>
+
+        <MudButton OnClick="() => MudDialog.Cancel()" Color="Color.Error">
+            Cancelar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    private string _baseUrl = "http://192.168.0.139:148";
+    //private string _baseUrl = "http://localhost:5297";
+
+    private string? previewImage;
+    private IBrowserFile? file;
+    private bool hasImage = false;
+    private string tipo1 = "FOTO", tipo2 = "PLANTILLA", tipo3 = "BLANCO";
+
+    private async Task UploadFiles(IBrowserFile f) {
+
+
+        file = f;
+
+        byte[] buffer;
+        using(var stream = f.OpenReadStream(maxAllowedSize: 1024 * 1024)) {
+            buffer = new byte[f.Size];
+            await stream.ReadAsync(buffer);
+        }
+
+        previewImage = $"data:{f.ContentType};base64,{Convert.ToBase64String(buffer)}";
+        hasImage = true;
+
+    }
+
+    private void EnviarTipo(IBrowserFile? img, string tipo) {
+        Console.WriteLine("--------------Dialog");
+        Console.WriteLine(tipo);
+        PdfDialogResult datos = new PdfDialogResult {
+            Files = img,
+            TipoPdf = tipo
+        };
+
+        MudDialog.Close(DialogResult.Ok(datos));
+    }
+
+
+    public class PdfDialogResult {
+        public IBrowserFile? Files { get; set; }
+        public string TipoPdf { get; set; }
+    }
+
+
+}

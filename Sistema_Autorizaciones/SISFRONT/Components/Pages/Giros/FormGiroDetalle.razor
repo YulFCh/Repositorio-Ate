@@ -1,0 +1,141 @@
+﻿@using MudBlazor
+@inject IDialogService DialogService
+@inject IGirosService GiroService
+@using SistemaLicencias.SHARED.DTOs
+@using SISFRONT.Components.Utilities;
+@using SISFRONT.Components.Dialogs;
+
+<MudPaper Class="p-6 mt-4" Style="background-color:#ffffff;" >
+    <MudText Typo="Typo.h5" Class="mb-4 text-primary">📑 Registro de Giro Detalle</MudText>
+
+    <MudGrid Spacing="3">
+        <!-- Giro Principal -->
+        <MudItem xs="12">
+            <MudSelect T="int?" Label="Giro Principal"
+                       FullWidth="true"
+                       Dense="true"
+                       Required="true"
+                       @bind-Value="selectedPrincipalId"
+                       @bind-Value:event="onchange"
+                       ValueChanged="OnPrincipalChanged">
+                <MudSelectItem Value="@( (int?)null )" Disabled="true">Seleccione:</MudSelectItem>
+                @foreach(var item in girosPrincipales) {
+                    <MudSelectItem Value="@( (int?)item.IdGiroPrincipal )">@item.Nombre</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+
+        <!-- Giro Complementario -->
+        <MudItem xs="12">
+            <MudSelect T="int?" Label="Giro Complementario"
+                       FullWidth="true"
+                       Dense="true"
+                       @bind-Value="selectedComplementarioId"
+                       @bind-Value:event="onchange"
+                       ValueChanged="OnComplementarioChanged"
+                       Disabled="comboComplementarioDisabled">
+                <MudSelectItem Value="@( (int?)null )" Disabled="true">Seleccione:</MudSelectItem>
+                @foreach(var item in girosComplementarios) {
+                    <MudSelectItem Value="@( (int?)item.IdGiroComplementario )">@item.Nombre</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+
+        <!-- Nombre del Giro Detalle -->
+        <MudItem xs="12">
+            <MudTextField Label="Nombre del Giro Detalle" Dense="true" @bind-Value="giroFlexible.Nombre" />
+        </MudItem>
+
+        <!-- Estado (radio group) -->
+        <MudItem xs="12" Class="mt-2">
+            <MudRadioGroup @bind-Value="giroFlexible.Estado" Row="true" Label="Estado del Giro">
+                <MudRadio Value="1">Activo</MudRadio>
+                <MudRadio Value="0">Inactivo</MudRadio>
+            </MudRadioGroup>
+        </MudItem>
+
+        <!-- Botón Guardar -->
+        <MudItem xs="12" Class="d-flex justify-center mt-4">
+            <MudButton Color="Color.Success"
+                       Variant="Variant.Filled"
+                       Class="px-5 py-2"
+                       Style="min-width: 160px; font-weight: bold;"
+                       OnClick="Guardar">
+                💾 Guardar
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@code {
+    
+    private bool isSaving = false;
+    private List<GiroPrincipal> girosPrincipales = new();
+    private List<GiroComplementario> girosComplementarios = new();
+    //dto
+    private GiroFlexible giroFlexible = new();
+
+    // Ids seleccionados - giros
+    private int? selectedPrincipalId = null;
+    private int? selectedComplementarioId = null;
+    private bool comboComplementarioDisabled = true;
+
+    protected override async Task OnInitializedAsync() {
+        await LoadComboPrincipal();
+    }
+
+    private async Task LoadComboPrincipal() {
+        girosPrincipales = await GiroService.ObtenerGirosPrincipalesAsync();
+    }
+
+    private async Task LoadComboComplementarios(int principalId) {
+        girosComplementarios = await GiroService.obtGiroComplementarioAsync(principalId);
+        // Deshabilita combo si está vacío
+        comboComplementarioDisabled = !girosComplementarios.Any();
+        selectedComplementarioId = null;
+    }
+
+    private async Task OnPrincipalChanged(int? newValue) {
+        selectedPrincipalId = newValue;
+        selectedComplementarioId = null;
+
+        Console.WriteLine($"idGiroPrincipal - {selectedPrincipalId}");
+        if(newValue.HasValue)
+            await LoadComboComplementarios(newValue.Value);
+    }
+
+    private async Task OnComplementarioChanged(int? newValue) {
+        selectedComplementarioId = newValue;
+    }
+
+    private async Task Guardar() {
+        isSaving = true;
+
+        try {
+            var request = new GiroFlexible {
+                    TipoRegistro = 1,
+                    Nombre = giroFlexible.Nombre,
+                    Estado = giroFlexible.Estado,
+                    IdGiroPrincipal = null,
+                    IdGiroComplementario = selectedComplementarioId
+                };
+
+            var (success, message) = await GiroService.InsertGiroAsync(request);
+
+            if(success) {
+                giroFlexible.Nombre = "";
+                giroFlexible.Estado = 0;
+                await DialogService.ShowMessageBox("Éxito", message);
+            }
+            else {
+                await DialogService.ShowMessageBox("Error", message);
+            }
+        }
+        catch(Exception ex) {
+            await DialogService.ShowMessageBox("Error", $"🧨 Excepción: {ex.Message}");
+        }
+        finally {
+            isSaving = false;
+        }
+    }
+}

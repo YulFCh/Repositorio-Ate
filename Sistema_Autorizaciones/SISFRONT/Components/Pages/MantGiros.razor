@@ -1,0 +1,166 @@
+﻿@page "/mant-giros"
+@using MudBlazor
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+@inject SessionService sessions
+@inject IGirosService GiroService
+@using SistemaLicencias.SHARED.DTOs
+@using SISFRONT.Components.Utilities;
+@using SISFRONT.Components.Dialogs;
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="my-4 mx-auto">
+    <MudTabs Rounded="true" Centered="true" Class="my-4">
+        <!-- TAB 1: Registro -->
+        <MudTabPanel Text="Registrar Giros">
+            <MudPaper Elevation="0" Class="p-4 rounded-xl">
+
+                <MudSelect T="int" Label="Tipo Registro" @bind-Value="TipoSeleccion">
+                    <MudSelectItem Value="0" Disabled="true">Seleccione:</MudSelectItem>
+                    <MudSelectItem Value="1">Detalle</MudSelectItem>
+                    <MudSelectItem Value="2">Complementario</MudSelectItem>
+                    <MudSelectItem Value="3">Principal</MudSelectItem>
+                </MudSelect>
+
+                <MudGrid Spacing="5" Class="mt-4">
+
+                    @if(TipoSeleccion == 1) {
+                        <MudItem xs="12">
+                            <MudText>Agregar Giro Detalle</MudText>
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudSelect T="int?" Label="Giro Principal"
+                                       @bind-Value="selectedPrincipalId"
+                                       @bind-Value:event="onchange"
+                                       ValueChanged="OnPrincipalChanged"
+                                       Required="true">
+                                <MudSelectItem Value="@( (int?)null )" Disabled="true">Seleccione:</MudSelectItem>
+
+                                @foreach(var item in girosPrincipales) {
+                                    <MudSelectItem Value="@( (int?)item.IdGiroPrincipal )">@item.Nombre</MudSelectItem>
+                                }
+                            </MudSelect>
+
+                        </MudItem>
+
+
+                        <MudItem xs="12">
+                            <MudSelect T="int?" Label="Giro Complementario"
+                                       @bind-Value="selectedComplementarioId"
+                                       @bind-Value:event="onchange"
+                                       ValueChanged="OnComplementarioChanged"
+                                       Disabled="comboComplementarioDisabled">
+
+                                <MudSelectItem Value="@( (int?)null )" Disabled="true">Seleccione:</MudSelectItem>
+
+                                @foreach(var item in girosComplementarios) {
+                                    <MudSelectItem Value="@( (int?)item.IdGiroComplementario )">@item.Nombre</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField T="string" Label="Nombre del Giro Detalle" Variant="Variant.Filled" @bind-Value="nuevoDetalle.Nombre" />
+                        </MudItem>
+
+
+
+                    }
+                    else if(TipoSeleccion == 2) {
+                        <MudItem xs="12">
+                            <MudText>Agregar Giro Complementario</MudText>
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudSelect T="int?" Label="Giro Principal"
+                                       @bind-Value="selectedPrincipalId"
+                                       @bind-Value:event="onchange"
+                                       ValueChanged="OnPrincipalChanged"
+                                       Required="true">
+                                <MudSelectItem Value="@( (int?)null )" Disabled="true">Seleccione:</MudSelectItem>
+
+                                @foreach(var item in girosPrincipales) {
+                                    <MudSelectItem Value="@( (int?)item.IdGiroPrincipal )">@item.Nombre</MudSelectItem>
+                                }
+                            </MudSelect>
+
+                        </MudItem>
+
+
+
+                        <MudItem xs="12">
+                            <MudTextField T="string" Label="Nombre del Giro Complementario" Variant="Variant.Filled" @bind-Value="nuevoDetalle.Nombre" />
+                        </MudItem>
+
+
+                    }
+                    else if(TipoSeleccion == 3) {
+                        <MudItem xs="12">
+                            <MudText>Agregar Giro Principal</MudText>
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField T="string" Label="Nombre del Giro Principal" Variant="Variant.Filled" @bind-Value="nuevoDetalle.Nombre" />
+                        </MudItem>
+
+
+                    }
+                    @if(TipoSeleccion != 0) {
+                        <MudItem xs="12">
+                            <MudRadioGroup @bind-Value="nuevoDetalle.estado">
+                                <MudRadio Value="1">Activo</MudRadio>
+                                <MudRadio Value="0">Inactivo</MudRadio>
+                            </MudRadioGroup>
+                        </MudItem>
+                        @if(isSaving) {
+                            <MudButton Disabled="true" Loading="true">Guardando...</MudButton>
+
+                        }
+                        else {
+                            <MudItem xs="12" Class="d-flex justify-end">
+                                <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Save" OnClick="GuardarGiro">
+                                    Guardar Giro
+                                </MudButton>
+                            </MudItem>
+                        }
+                    }
+
+                </MudGrid>
+            </MudPaper>
+        </MudTabPanel>
+
+        <!-- TAB 2: Listado -->
+        <MudTabPanel Text="Modificar Giros">
+            <MudPaper Elevation="0" Class="p-4 rounded-xl">
+                <MudTable Items="girosDetalle" Dense="true" Hover="true" Bordered="true">
+                    <HeaderContent>
+                        <MudTh>ID</MudTh>
+                        <MudTh>Nombre</MudTh>
+                        <MudTh>Estado</MudTh>
+                        <MudTh>Acciones</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.IdDetalleGiro</MudTd>
+                        <MudTd>@context.Nombre</MudTd>
+                        <MudTd>
+                            <MudTd>
+                                <MudChip T="string" Color="@(context.estado == 1 ? Color.Success : Color.Error)" Variant="Variant.Filled">
+                                    @(context.estado == 1 ? "Activo" : "Inactivo")
+                                </MudChip>
+                            </MudTd>
+
+                        </MudTd>
+                        <MudTd>
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" OnClick="@(() => EditarGiroDetalle(context))" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => DesactivarGiroDetalle(context))" />
+                        </MudTd>
+                    </RowTemplate>
+
+                    <PagerContent>
+                        <MudTablePager PageSizeOptions="new int[] { 10,15,20, 50 }" />
+                    </PagerContent>
+                </MudTable>
+            </MudPaper>
+        </MudTabPanel>
+
+    </MudTabs>
+</MudContainer>
+

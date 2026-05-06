@@ -1,0 +1,137 @@
+﻿@page "/conMaps"
+@using MudBlazor
+@using SistemaLicencias.SHARED.DTOs
+@using SISFRONT.Components.Utilities
+@inject IJSRuntime JS
+@inject HttpClient Http
+@inject GoogleMapsInterop MapsInterop
+
+
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="my-10">
+    <!--
+    <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4 text-primary fw-bold">
+        🗺️ Mapa de Autorizaciones
+    </MudText>
+
+    <MudGrid>
+        @if(zonas?.Any() == true) {
+            <MudItem xs="12" md="4">
+                <MudSelect T="int"
+                           Label="Zona"
+                           Value="_zonaSeleccionada"
+                           ValueChanged="OnZonaChanged"
+                           Placeholder="Selecciona una zona"
+                           Dense="true">
+                    <MudSelectItem Value="0" Disabled="true">Seleccione:</MudSelectItem>
+                    @foreach(var zona in zonas) {
+                        <MudSelectItem Value="@zona.IdZona">@zona.Nombre</MudSelectItem>
+                    }
+                </MudSelect>
+
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudSelect T="int"
+                           Label="Subzona"
+                           @bind-Value="_subzonasSeleccionada"
+                           Placeholder="Selecciona una subzona"
+                           Dense="true"
+                           AdornmentIcon="@Icons.Material.Filled.Map"
+                           Disabled="@(!subzonas.Any())">
+                    <MudSelectItem Value="0" Disabled="true">Seleccione:</MudSelectItem>
+                    @foreach(var sz in subzonas) {
+                        <MudSelectItem Value="@sz.idSubzona">@sz.Nombre</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+
+
+
+        }
+        else {
+            <MudItem xs="12">
+                <MudText Typo="Typo.body2">Cargando zonas disponibles...</MudText>
+                <MudProgressCircular Color="Color.Primary" />
+            </MudItem>
+        }
+    </MudGrid>
+    -->
+
+    <MudGrid>
+        @if(zonas?.Any() == true) {
+            <MudItem xs="12" md="6">
+                <MudSelect T="int" Label="Selecciona una zona" @bind-Value="_zonaSeleccionada" Placeholder="Seleccione:" Dense="true" Class="mb-3">
+                    <MudSelectItem Value="0" Disabled="true">Seleccione:</MudSelectItem>
+                    @foreach(var zona in zonas) {
+                        <MudSelectItem Value="@zona.IdZona">@zona.Nombre</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" md="6" Class="d-flex align-items-end">
+                <MudButton Color="Color.Primary" OnClick="BuscarSubzonas" Variant="Variant.Filled">
+                    Buscar
+                </MudButton>
+            </MudItem>
+        }
+        else {
+            <MudItem xs="12">
+                <MudText Typo="Typo.body2">Cargando zonas disponibles...</MudText>
+                <MudProgressCircular Color="Color.Primary" />
+            </MudItem>
+        }
+    </MudGrid>
+
+
+    <div id="my_map" style="height: 400px; width: 100%; margin-top:20px; border-radius:10px;"></div>
+
+    <MudText Typo="Typo.h6" Class="mt-4 mb-2">Subzonas registradas</MudText>
+
+    <MudTextField @bind-Value="_filtroNombre" Label="Buscar por nombre" Variant="Variant.Outlined" Dense="true" Class="mb-3" />
+
+    <MudTable Items="filteredSubzonas"
+              RowsPerPage="6"
+              Dense="true"
+              Bordered="true"
+              Hover="true"
+              Striped="true"
+              Elevation="0"
+              Breakpoint="Breakpoint.Sm"
+              RowClassFunc="@( (s, i) => s.Ocupados >= s.CapacidadTotal ? "subzona-llena" : s.Ocupados == 3 ? "subzona-ambar" : null )">
+
+
+        <HeaderContent>
+            <MudTh>Subzona</MudTh>
+            <MudTh>Capacidad</MudTh>
+            <MudTh>Disponibles</MudTh>
+            
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd>@context.Nombre</MudTd>
+            <MudTd>@context.CapacidadTotal</MudTd>
+            <MudTd>@context.Ocupados / @context.CapacidadTotal</MudTd>
+            
+        </RowTemplate>
+
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+
+
+</MudContainer>
+
+<style>
+    .subzona-llena {
+        background-color: #ff7070 !important; /* rojo claro */
+    }
+
+    .subzona-ambar {
+        background-color: #fff3cd !important; /* amarillo claro */
+    }
+
+    .subzona-verde {
+        background-color: #e0f7e9 !important; /* verde claro*/
+    }
+
+</style>

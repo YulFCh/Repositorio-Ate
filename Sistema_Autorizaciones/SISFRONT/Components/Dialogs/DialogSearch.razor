@@ -1,0 +1,88 @@
+﻿@using SistemaLicencias.SHARED.DTOs
+
+<MudDialog MaxWidth="MaxWidth.ExtraLarge" FullWidth="true">
+    <DialogContent >
+        <MudText Typo="Typo.h6" Class="mb-4">Lista de Solicitantes Registrados</MudText>
+
+        <MudTable T="SolicitanteAPI"
+                  Items="filteredSolicitantes"
+                  RowsPerPage="10"
+                  RowsPerPageOptions="new int[] {5,10,20,50}"
+                  Hover="true"
+                  Bordered="true"
+                  Elevation="1"
+                  Dense="true"
+                  Class="mb-5">
+
+            <ToolBarContent>
+                <MudTextField @bind-Value="searchTerm"
+                              Placeholder="Buscar por nombre o DNI"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Search"
+                              IconSize="Size.Medium"
+                              Class="w-50 me-4" />
+
+                <MudDatePicker @bind-Date="selectedDate"
+                               Label="Filtrar por fecha"
+                               Class="mt-0"
+                               DateFormat="yyyy-MM-dd"
+                               DisableToolbar="true"
+                               Clearable="true"
+                               Adornment="Adornment.Start"
+                               AdornmentIcon="@Icons.Material.Filled.Event" />
+            </ToolBarContent>
+
+            <HeaderContent>
+                <MudTh>Nombre</MudTh>
+                <MudTh>DNI</MudTh>
+                <MudTh>Teléfono</MudTh>
+                <MudTh>Fecha Registro</MudTh>
+                <MudTh>Tipo Doc</MudTh>
+            </HeaderContent>
+
+            <RowTemplate>
+                <MudTd>@context.nombre</MudTd>
+                <MudTd>@context.nrodni</MudTd>
+                <MudTd>@context.telefono</MudTd>
+                <MudTd>@context.fecharegistro?.ToString("yyyy-MM-dd")</MudTd>
+                <MudTd>@GetTipoDocLabel(context.tipo_doc)</MudTd>
+            </RowTemplate>
+
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+
+        </MudTable>
+    </DialogContent>
+
+    <DialogActions >
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CerrarDialogo">
+            Cerrar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public List<SolicitanteAPI> filteredSolicitantes { get; set; }
+    [Parameter] public string searchTerm { get; set; }
+    [Parameter] public DateTime? selectedDate { get; set; }
+
+    private string _baseUrl = "http://192.168.0.139:148";
+    //private string _baseUrl = "http://localhost:5297";
+
+    private void CerrarDialogo() {
+        MudDialog.Close();
+    }
+
+    private string GetTipoDocLabel(int tipoDoc) {
+        return tipoDoc switch {
+            1 => "DNI",
+            2 => "Carné",
+            5 => "Carné de Extranjería",
+            _ => "-"
+        };
+    }
+
+}

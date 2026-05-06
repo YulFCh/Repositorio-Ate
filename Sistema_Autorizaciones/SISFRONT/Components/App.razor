@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <!--<link rel="stylesheet" href="bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="SISFRONT.styles.css" />
+    -->
+    <link rel="stylesheet" href="app.css" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet" />
+    <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <HeadOutlet />
+</head>
+
+<body>
+    <Routes @rendermode="InteractiveServer" />
+    <script src="_framework/blazor.web.js"></script>
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script>     
+
+    <!--GRAFICOS-->    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/graf.js"></script>
+
+
+    <!-- Google Maps API: Asegúrate de reemplazar `TU_API_KEY_AQUI` -->
+    <!-- TEST  - AIzaSyA8MPxcLr8s_-Ksqkm6SDzmr5B-_O9GCwc -->    
+    <!-- Nuestro script de inicialización del mapa -->
+    <script src="js/maps.js"></script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA8MPxcLr8s_-Ksqkm6SDzmr5B-_O9GCwc&libraries=marker"></script>
+
+   
+
+
+    <script>
+        // Función para descargar un archivo a partir de base64
+        window.descargarArchivo = (base64, mimeType, fileName) => {
+            const link = document.createElement('a');
+            link.href = `data:${mimeType};base64,${base64}`;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+        // Función para descargar un archivo a partir de base64
+        window.downloadFile = (base64Data, filename) => {
+            const link = document.createElement('a');
+            link.href = base64Data;
+            link.download = filename;
+            document.body.appendChild(link);  // Asegúrate de añadir el link al DOM
+            link.click();
+            document.body.removeChild(link);  // Luego, lo eliminamos del DOM
+        };
+
+        window.descargarArchivo = (base64, mimeType, nombre) => {
+            const link = document.createElement("a");
+            link.href = `data:${mimeType};base64,${base64}`;
+            link.download = nombre;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        };
+
+
+
+    </script>
+
+</body>
+
+</html>

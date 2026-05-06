@@ -1,0 +1,145 @@
+﻿@using MudBlazor
+@using System.Net.Http.Json
+@using SistemaLicencias.SHARED.DTOs
+@inject HttpClient Http
+
+<style>
+    .baras{
+        font-size:11px;
+    }
+
+    .cesadoth{
+        background-color: tomato;
+    }
+</style>
+
+<MudDialog>
+    <DialogContent>
+
+        <!-- Barra de búsqueda -->
+        <MudStack Row="true" Spacing="2" Class="mb-3">
+            <MudTextField @bind-Value="searchTerm"
+                          Placeholder="Buscar por razón social"
+                          Immediate="true"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Class="w-full" />
+            <MudTextField @bind-Value="searchTerm1"
+                          Placeholder="NroLicencia"
+                          Immediate="true"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Class="w-full" />
+
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Reload">
+                Buscar
+            </MudButton>
+        </MudStack>
+
+        <MudTable T="consultaLicenciaDTO"
+                  @ref="tableRef"
+                  ServerData="LoadLicencias"
+                  Dense="true"
+                  RowsPerPage="20"                  
+                  Hover="true"
+                  Bordered="true"
+                  Elevation="1"
+                  Class="mt-2 mb-5">
+
+            <HeaderContent>
+                <MudTh Class="baras">NroLicencia</MudTh>
+                <MudTh Class="baras">Emision</MudTh>
+                <MudTh Class="baras">NroExpediente</MudTh>
+                <MudTh Class="baras">FechaExpediente</MudTh>
+                <MudTh Class="baras">TipoSolicitud</MudTh>
+                <MudTh Class="baras">RazónSocial</MudTh>
+                <MudTh Class="baras">Estado</MudTh>
+                <MudTh Class="baras"></MudTh>
+            </HeaderContent>
+
+            <RowTemplate>
+                <MudTd Class="baras">@context.nroLicencia</MudTd>
+                <MudTd Class="baras">@context.fechaLicencia</MudTd>
+                <MudTd Class="baras">@context.nroExpediente</MudTd>
+                <MudTd Class="baras">@context.fechaExpediente</MudTd>
+                <MudTd Class="baras">@context.descSolicitud</MudTd>
+                <MudTd Class="baras" Style="">@context.razonSocial</MudTd>
+                <MudTd Class="baras">@context.descEstado</MudTd>
+                <MudTd>
+                    <MudIconButton Icon="@Icons.Material.Filled.Add"
+                                   Color="Color.Success" Size="Size.Small"
+                                   OnClick="@(() => SeleccionarLicencia(context))" />
+                </MudTd>
+            </RowTemplate>
+
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+
+        </MudTable>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Cerrar" Color="Color.Secondary">Cancelar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+
+    //private readonly string _baseUrl = "http://localhost:5297";
+    private readonly string _baseUrl = "http://192.168.4.225:108";
+    private MudTable<consultaLicenciaDTO>? tableRef;
+    private string searchTerm = "";
+    private string searchTerm1 = "";
+
+    ApiCLicencia? result;
+
+    MudTheme MyCustom = new MudTheme() {
+        Typography = new Typography() {
+            Body1 = new Body1Typography()
+            {
+                FontFamily = new[] { "Roboto", "Helvetica", "Arial", "sans-serif" },
+                FontSize = "0.1rem",
+                FontWeight = "500",
+                LineHeight = "1.6",
+                LetterSpacing = ".0075em"
+            }
+        }
+    };
+
+
+    private async Task<TableData<consultaLicenciaDTO>> LoadLicencias(TableState state, CancellationToken ct) {
+
+        var page = state.Page + 1;
+        var pageSize = state.PageSize <= 0 ? 20 : state.PageSize;
+
+        var rs = Uri.EscapeDataString(searchTerm ?? "");
+        var rs1 = Uri.EscapeDataString(searchTerm1 ?? "");
+        //var rs = "MEDICO";
+
+        var url = $"{_baseUrl}/api/Consultas?numero={rs1}&razonSocial={rs}&pageNumber={page}&pageSize={pageSize}";
+
+        try {
+            result = await Http.GetFromJsonAsync<ApiCLicencia>(url, ct);
+        }
+        catch(OperationCanceledException) {
+            return new TableData<consultaLicenciaDTO> { Items = [], TotalItems = 0 };
+        }
+        catch {
+            return new TableData<consultaLicenciaDTO> { Items = [], TotalItems = 0 };
+        }
+
+        return new TableData<consultaLicenciaDTO> {
+            Items = result?.datos ?? [],
+            TotalItems = result?.totalRegistros ?? 0
+        };
+    }
+
+    private void Reload() => tableRef?.ReloadServerData();
+
+    private void SeleccionarLicencia(consultaLicenciaDTO licencia)
+        => MudDialog.Close(DialogResult.Ok(licencia));
+
+    private void Cerrar() => MudDialog.Cancel();
+}

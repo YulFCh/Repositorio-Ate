@@ -1,0 +1,56 @@
+﻿@inject ProtectedSessionStorage SessionStorage
+@inject NavigationManager nav
+@inject SessionService Sesion
+@using SistemaLicencias.SHARED.DTOs
+@typeparam TUser
+
+@if(!_ready) {
+    <MudProgressCircular Indeterminate="true" Color="Color.Primary" Class="m-5" />
+}
+else if(_valid) {
+    @ChildContent
+}
+else {
+    <MudAlert Severity="Severity.Error" Elevation="0">Acceso denegado.</MudAlert>
+}
+
+@code {
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    private bool _ready = false;
+    private bool _valid = false;
+
+    protected override async Task OnInitializedAsync() {
+        try {
+            var session = await SessionStorage.GetAsync<TUser>("usuarioLogueado");
+
+            if(session.Success && session.Value != null) {
+                var usuario = session.Value as rsLogin;
+
+                if(!string.IsNullOrWhiteSpace(usuario?.login)) {
+                    Console.WriteLine($"Sesión activa: {usuario.login}");
+
+                    if(!Sesion.SesionCargada)
+                        Sesion.CargarDesdeObjeto(usuario);
+
+                    _valid = true;
+                }
+                else {
+                    Console.WriteLine("Sesión sin datos válidos.");
+                    nav.NavigateTo("/", true);
+                }
+            }
+            else {
+                Console.WriteLine("Sesión no encontrada.");
+                nav.NavigateTo("/", true);
+            }
+        }
+        catch(Exception ex) {
+            Console.WriteLine($"Error en SessionGuard: {ex.Message}");
+            nav.NavigateTo("/", true);
+        }
+        finally {
+            _ready = true;
+        }
+    }
+}

@@ -1,0 +1,38 @@
+﻿@page "/home"
+@using SistemaLicencias.SHARED.DTOs
+@using SISFRONT.Components.Utilities
+@inject IHttpContextAccessor HttpContextAccessor
+@inject ProtectedSessionStorage SessionStorage
+@inject SessionService session
+
+
+    <MudContainer MaxWidth="MaxWidth.Medium" Class="my-5 px-3">
+        <MudPaper Elevation="1" Class="p-4 pb-4" Style="border-left: 6px solid #2196F3; background-color: #f5faff;">
+            <MudGrid>
+                <MudItem xs="12" Style="padding-left:5%">
+                    <MudText Typo="Typo.subtitle1" Class="mb-2">
+                        <b>Ud. ha iniciado sesión en:</b>
+                    </MudText>
+                    <MudText Typo="Typo.body2" Class="mb-1"><b>USUARIO :</b>@Usuario.login</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-1"><b>NOMBRE USUARIO :</b>@Usuario.nombre</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-1"><b>UNIDAD ORGÁNICA :</b>@Usuario.nomb_area</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-1"><b>PERFIL ASIGNADO :</b>@Usuario.nomb_perfil</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-1"><b>FECHA :</b> @DateTime.Now.ToString("dd/MM/yyyy")</MudText>
+                <!--<MudText Typo="Typo.body2"><b>ESTACIÓN :</b> @Usuario.ip [@Usuario.host ]</MudText>-->
+                
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </MudContainer>
+
+
+@code {
+    private rsLogin Usuario = new();
+    
+
+
+    protected override async Task OnInitializedAsync() {
+        Usuario = session.UsuarioActual;
+        
+    }
+}

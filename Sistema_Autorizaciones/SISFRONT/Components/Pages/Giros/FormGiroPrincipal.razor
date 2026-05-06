@@ -1,0 +1,67 @@
+﻿@using MudBlazor
+@inject IDialogService DialogService
+@inject IGirosService GiroService
+@using SistemaLicencias.SHARED.DTOs
+@using SISFRONT.Components.Utilities;
+@using SISFRONT.Components.Dialogs;
+
+<MudPaper Class="p-6 mt-4" Style="background-color:#ffffff;">
+    <MudText Typo="Typo.h5" Class="mb-4">Registro de Giro Principal</MudText>
+
+    <MudGrid Spacing="3">
+        <MudItem xs="12">
+            <MudTextField Label="Nombre del Giro Principal" @bind-Value="nombre"  FullWidth="true" />
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudRadioGroup @bind-Value="estado" Row="true">
+                <MudRadio Value="1">Activo</MudRadio>
+                <MudRadio Value="0">Inactivo</MudRadio>
+            </MudRadioGroup>
+        </MudItem>
+
+        <MudItem xs="12" Class="d-flex justify-center mt-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Success" Style="font-weight:bold; padding: 8px 24px;" OnClick="Guardar">
+                Guardar
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+@code {
+    private string nombre;
+    private int estado = 1;
+    private bool isSaving = false;
+
+    private async Task Guardar() {
+        isSaving = true;
+
+        try {
+            var request = new GiroFlexible {
+                    TipoRegistro = 3,
+                    Nombre = nombre,
+                    Estado = estado,
+                    IdGiroPrincipal = null,
+                    IdGiroComplementario = null
+                };
+
+            var (success, message) = await GiroService.InsertGiroAsync(request);
+
+            if(success) {
+                nombre = "";
+                estado = 0;
+                await DialogService.ShowMessageBox("Éxito", message);
+            }
+            else {
+                await DialogService.ShowMessageBox("Error", message);
+            }
+        }
+        catch(Exception ex) {
+            await DialogService.ShowMessageBox("Error", $"🧨 Excepción: {ex.Message}");
+        }
+        finally {
+            isSaving = false;
+        }
+    }
+}
+

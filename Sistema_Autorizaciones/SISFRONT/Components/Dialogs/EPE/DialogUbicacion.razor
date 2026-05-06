@@ -1,0 +1,72 @@
+﻿@inject HttpClient Http
+@inject IJSRuntime JS
+@using SistemaLicencias.SHARED.DTOs
+@using MudBlazor
+@inject GoogleMapsInterop googleMapsInterop
+
+
+<MudDialog>
+    <DialogContent>    
+
+        <div id="my_map" style="height: 400px; width: 100%; margin-top:20px; border-radius:10px;"></div>       
+
+
+
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton  Color="Color.Secondary" OnClick="Cerrar">Cerrar</MudButton>
+        <MudButton Color="Color.Primary" OnClick="AgergarUbicacion">OK</MudButton>
+    </DialogActions>
+</MudDialog>
+<style>
+    .subzona-llena {
+        background-color: #ff7070 !important; /* rojo claro */
+    }
+
+    .subzona-ambar {
+        background-color: #fff3cd !important; /* amarillo claro */
+    }
+
+    .subzona-verde {
+        background-color: #e0f7e9 !important; /* verde claro*/
+    }
+
+</style>
+
+@code{
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    private string coord ="" ;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if(firstRender) {
+            var dotNetRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("googleMaps.initMap", dotNetRef);
+        }
+    }
+
+
+    [JSInvokable]
+    public async Task OnMapClick(double lat, double lng) {
+        // Formato: lng,lat,0 (orden importante)
+        coord = $"{lat},{lng},0";
+
+        await googleMapsInterop.SetSingleMarker(lat, lng, "", "");
+
+        StateHasChanged(); // <- Esto refresca la UI
+
+        // Feedback visual opcional
+
+    }
+
+    private void AgergarUbicacion() {
+        
+        MudDialog?.Close(DialogResult.Ok(coord));
+    }
+
+
+    void Cerrar() => MudDialog?.Close();
+
+
+    
+}

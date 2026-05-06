@@ -1,0 +1,145 @@
+﻿@inject HttpClient Http
+@using SistemaLicencias.SHARED.DTOs
+@using System.Text.Json.Serialization
+
+
+<MudDialog>
+    <DialogContent>
+        @if(isLoading) {
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" Class="d-block mx-auto my-6" />
+        }
+
+        else {
+            <MudTable T="HabilitaUrb"
+                      Items="filterHabUrb"
+                      Dense="true"
+                      RowsPerPage="20"
+                      Hover="true"
+                      Bordered="true"
+                      Elevation="1"
+                      Class="mt-2 mb-5">
+
+                <ToolBarContent>
+                    <MudTextField @bind-Value="searchTerm"
+                                  Placeholder="Buscar por nombre o DNI"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Search"
+                                  IconSize="Size.Medium"
+                                  Class="mt-0 w-50 me-4 mt-4" />
+
+                </ToolBarContent>
+
+
+                <HeaderContent>
+                    <MudTh>COD HAB-URB</MudTh>
+                    <MudTh>NOMBRE HAB-URB</MudTh>
+
+                </HeaderContent>
+
+                <RowTemplate>
+                    <MudTd>@context.codigo</MudTd>
+                    <MudTd>@context.direccion</MudTd>
+
+                    <MudTd>
+
+                        <MudIconButton Icon="@Icons.Material.Filled.Add"
+                                       Color="Color.Success"
+                                       OnClick="@(() => SelecLugar(context))" Size="Size.Small" />
+
+
+                    </MudTd>
+                </RowTemplate>
+
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+
+            </MudTable>
+
+        }
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Cerrar" Color="Color.Secondary">Cancelar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public EventCallback<string> OnSeleccionarGiro { get; set; }
+
+    //private string _baseUrl = "http://192.168.0.139:148";
+    private string _baseUrl = "http://localhost:5297";
+    private bool isLoading = true;
+
+    private List<rsHab> _rs = new();
+    private List<HabilitaUrb> lstHabUrb = new();
+
+    private string searchTerm = "";
+
+
+    protected override async Task OnInitializedAsync() {
+
+        try {
+            //var rs = await Http.GetFromJsonAsync<rsHab>($"{_baseUrl}/api/Establecimiento/getallhaburb");
+            var rs = await Http.GetFromJsonAsync<rsHab>("http://localhost:5297/api/Establecimiento/getallhaburb");
+           
+            if(rs?.response != null) {
+                lstHabUrb = rs.response;
+
+            }
+            else {
+                Console.WriteLine("Lista Vacia - HabUrb");
+            }
+        }
+        catch(Exception ex) {
+            Console.WriteLine($"Error al consultar solicitantes: {ex.Message}");
+        }
+        finally {
+            isLoading = false;
+        }
+
+
+
+    }
+
+
+    private IEnumerable<HabilitaUrb> filterHabUrb => lstHabUrb.Where(x => {
+        bool matchesText = string.IsNullOrWhiteSpace(searchTerm)
+            || (!string.IsNullOrWhiteSpace(x.direccion) && x.direccion.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+        //|| (!string.IsNullOrWhiteSpace(x.nrodni) && x.nrodni.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+
+        return matchesText;
+    });
+
+    private void SelecLugar(HabilitaUrb h) {
+        var lugar = $"{h.codigo} | {h.direccion}";
+        MudDialog.Close(DialogResult.Ok(lugar));
+    }
+
+
+
+    private void Cerrar() {
+        MudDialog.Cancel();
+    }
+
+
+
+    public class rsHab {
+        [JsonPropertyName("mensaje")]
+        public string msj { get; set; }
+        [JsonPropertyName("response")]
+        public List<HabilitaUrb> response { get; set; }
+    }
+
+    public class HabilitaUrb {
+        [JsonPropertyName("COD_HABIL")]
+        public string codigo { get; set; }
+        [JsonPropertyName("NOM_HAB_UR_CORREGIDO")]
+        public string direccion { get; set; }
+
+    }
+}

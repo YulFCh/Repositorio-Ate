@@ -1,0 +1,43 @@
+﻿<MudDialog MaxWidth="MaxWidth.ExtraSmall" FullWidth="true">
+    <DialogContent>
+        <div class="succes-container">
+            <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Class="icon-success mb-4" Color="Color.Success" />
+
+            <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-2 fw-bold">¡Datos agregados correctamente!</MudText>
+            <MudText Typo="Typo.body1" Align="Align.Center" Class="mb-4">
+                @ContentText
+            </MudText>
+        </div>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="Submit" Size="Size.Large" Class="px-6">
+            Aceptar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+<style>
+    .succes-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 200px;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .icon-success {
+        font-size: 5rem; /* Forzamos tamaño más grande del ícono */
+    }
+</style>
+
+@code {
+    [Parameter] public string ContentText { get; set; }
+    [Parameter] public string ButtonText { get; set; } = "Aceptar";
+    [Parameter] public Color Color { get; set; } = Color.Primary;
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; }
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(true));
+}

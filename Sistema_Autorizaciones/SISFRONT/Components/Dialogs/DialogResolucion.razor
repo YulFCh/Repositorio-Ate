@@ -1,0 +1,265 @@
+﻿@inject HttpClient Http
+@using MudBlazor
+@inject SessionService sessions
+@inject IDialogService DialogService
+@inject IHttpContextAccessor HttpContextAccessor
+@inject IJSRuntime JS
+@using SistemaLicencias.SHARED.DTOs
+@using SISFRONT.Components.Utilities
+@using SISFRONT.Components.Dialogs
+@using System.Text.RegularExpressions
+
+
+<MudDialog>
+    <DialogContent>
+        <MudPaper Class="p-6 rounded-2xl" Style="min-width:420px; max-width:600px;" Elevation="0">
+            <MudStack Spacing="2">
+
+
+
+
+                <MudDivider Class="my-2" />
+
+                <MudTextField Label="Siglas Resolución"
+                              Variant="Variant.Outlined"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.ShortText"
+                              @bind-Value="siglaResolucion" />
+                <MudTextField Label="N° Autorizacion"
+                              Variant="Variant.Outlined"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.ShortText"
+                              @bind-Value="nroAutorizacion" />
+
+                <MudDatePicker Label="Fecha Autorización"
+                               @bind-Date="fechaLicencias"
+                               Dense="true"
+                               Editable="true"
+                               DateFormat="dd/MM/yyyy"
+                               Required="true"
+                               Variant="Variant.Outlined"
+                               Adornment="Adornment.Start"
+                               AdornmentIcon="@Icons.Material.Filled.CalendarToday"
+                               Placeholder="dd/mm/yyyy" />
+
+                <MudDatePicker Label="Vigencia Hasta"
+                               @bind-Date="fecha_vencimiento"
+                               Dense="true"
+                               Editable="true"
+                               DateFormat="dd/MM/yyyy"
+                               Required="true"
+                               Variant="Variant.Outlined"
+                               Adornment="Adornment.Start"
+                               AdornmentIcon="@Icons.Material.Filled.DateRange"
+                               Placeholder="dd/mm/yyyy" />
+
+              
+
+                <MudButton OnClick="async () => await GenerarWord()"
+                           Variant="Variant.Outlined"
+                           Color="Color.Info"
+                           StartIcon="@Icons.Material.Filled.Description"
+                           Class="mt-1">
+                    Generar Word
+                </MudButton>
+
+                <MudDivider Class="my-1" />
+
+                <MudText Typo="Typo.subtitle2" Class="fw-bold text-primary mt-2">
+                    Datos de la Resolución
+                </MudText>
+
+                <MudTextField Label="N° Resolución"
+                              Variant="Variant.Outlined"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.FormatListNumbered"
+                              @bind-Value="nroResolucion"
+                              />
+
+                <MudDatePicker Label="Fecha Resolución"
+                               @bind-Date="fechaResolucion"
+                               Dense="true"
+                               Editable="true"
+                               Mask="@(new DateMask("dd/MM/yyyy"))"
+                               DateFormat="dd/MM/yyyy"
+                             
+                               Variant="Variant.Outlined"
+                               Adornment="Adornment.Start"
+                               AdornmentIcon="@Icons.Material.Filled.EventNote"
+                               Placeholder="dd/mm/yyyy" />
+            </MudStack>
+        </MudPaper>
+    </DialogContent>
+
+    <DialogActions>
+        <MudSpacer />
+        <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="() => MudDialog.Cancel()">
+            Cancelar
+        </MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OnGuardarClick">
+            Actualizar
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public int IdSolicitud { get; set; }
+    [Parameter] public string tipoSolicitud { get; set; }
+
+    private string _baseUrl = "http://192.168.0.139:148";
+    //private string _baseUrl = "http://localhost:5297";
+
+    public SolicitudesAPI sol = new();
+    public DocumentoDTO doc = new();
+    public uResolucionDTO resolucion = new();
+
+    private string nroAutorizacion;
+    private string nroResolucion;
+    private string siglaResolucion;
+    private DateTime? fechaResolucion;
+    private DateTime? fechaLicencias;
+    private DateTime? fecha_vencimiento;
+
+
+
+
+    private async void OnGuardarClick() {
+
+        if(string.IsNullOrWhiteSpace(nroResolucion) ||
+      fechaResolucion == DateTime.MinValue ||
+      fechaLicencias == DateTime.MinValue ||
+      fecha_vencimiento == DateTime.MinValue) {
+            await DialogService.ShowMessageBox("Aviso", "Por favor completa todos los campos obligatorios marcados con *.");
+            return;
+        }
+        IDialogReference? loadingDialog = null;
+
+        try {
+            // Mostrar diálogo de carga
+            var loadingParams = new DialogParameters
+                        {
+            { "LoadingMessage", "Actualizando solicitud..." }
+        };
+
+            loadingDialog = DialogService.Show<DialogLoading>("", loadingParams, new DialogOptions { NoHeader = true });
+
+            // Armar el objeto a enviar
+            var dto = new uResolucionDTO {
+                    idSolicitud = IdSolicitud,
+                    nroAutorizacion = nroAutorizacion,
+                    nroResolucion = nroResolucion,
+                    fechaResolucion = fechaResolucion ?? DateTime.Now,
+                    siglasResolucion = siglaResolucion,
+                    fechaLicencias = fechaLicencias ?? DateTime.Now,
+                    vigencia_hasta = fecha_vencimiento ?? DateTime.Now,
+                    operadorActualiza = sessions.UsuarioActual.login
+                };
+                Console.WriteLine(dto);
+            //API            
+            var response = await Http.PostAsJsonAsync($"{_baseUrl}/api/Solicitud/updateResolucion", dto);
+
+            loadingDialog?.Close();
+
+            if(response.IsSuccessStatusCode) {
+                await DialogService.ShowMessageBox("Actualizado", "Resolución actualizada correctamente.");
+                MudDialog.Close(DialogResult.Ok(true)); // cerrar el diálogo con éxito
+            }
+            else {
+                var error = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"❌ Error al actualizar resolución: {error}");
+                await DialogService.ShowMessageBox("Error", "No se pudo actualizar la resolución.");
+            }
+        }
+        catch(Exception ex) {
+            loadingDialog?.Close();
+            Console.WriteLine($"❌ Excepción inesperada: {ex.Message}");
+            await DialogService.ShowMessageBox("Error", "Ocurrió un error inesperado al actualizar.");
+        }
+    }
+
+
+
+    private async Task GenerarWord() {
+
+        if(string.IsNullOrWhiteSpace(siglaResolucion) ||
+      fecha_vencimiento == DateTime.MinValue ||
+      fechaLicencias == DateTime.MinValue) {
+            await DialogService.ShowMessageBox("Aviso", "Por favor completa los campos necesarios para la plantilla *.");
+            return;
+        }
+        IDialogReference? loadingDialog = null;
+
+        try {
+            var loadingParams = new DialogParameters
+                                {
+            { "LoadingMessage", "Generando documento Word..." }
+        };
+
+            loadingDialog = DialogService.Show<DialogLoading>("", loadingParams, new DialogOptions { NoHeader = true });
+
+            var rs = await Http.GetFromJsonAsync<ApiResponseDOC>($"{_baseUrl}/api/Archivos/obtDoc/{IdSolicitud}"); //GET
+        
+            doc = rs.response;
+            //DocumentoDTO  POST
+            var documento = new DocumentoDTO {
+                    nroExpediente = doc.nroExpediente,
+                    FecExpediente = doc.FecExpediente,
+                    RazSocial = doc.RazSocial,
+                    Dni = doc.Dni,
+                    Direccion = doc.Direccion,
+                    giro = doc.giro,
+                    nombreGiro = doc.nombreGiro,
+                    obs = doc.obs,
+                    subZona = doc.subZona,
+                    fecVencimineto = fecha_vencimiento.ToString(),
+                    aHorario = LimpiarTextoHorario(doc.aHorario.ToString())
+                };
+
+            // Serializar con Newtonsoft.Json
+            string jsonDebug = Newtonsoft.Json.JsonConvert.SerializeObject(documento, Formatting.Indented);
+
+            Console.WriteLine("JSON enviado al endpoint:");
+            Console.WriteLine(jsonDebug);
+
+            var response = await Http.PostAsJsonAsync($"{_baseUrl}/api/archivos/resolucion-word", documento);
+
+            loadingDialog?.Close();
+
+            if(response.IsSuccessStatusCode) {
+                var bytes = await response.Content.ReadAsByteArrayAsync();
+                var base64 = Convert.ToBase64String(bytes);
+
+                var nombreArchivo = $"Resolucion_{documento.nroExpediente}_{documento.RazSocial}.docx";
+
+                await JS.InvokeVoidAsync("descargarArchivo", base64,
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document", nombreArchivo);
+            }
+            else {
+                await DialogService.ShowMessageBox("Error", "No se pudo generar el documento Word.");
+            }
+        }
+        catch(Exception ex) {
+            loadingDialog?.Close();
+            Console.WriteLine("❌ Error: " + ex.Message);
+            await DialogService.ShowMessageBox("Error", "Ocurrió un error inesperado al generar Word-Plantilla.");
+        }
+    }
+
+    public static string LimpiarTextoHorario(string input) {
+        if(string.IsNullOrWhiteSpace(input))
+            return string.Empty;
+
+        input = input.Replace("{", "")
+                     .Replace("}", "")
+                     .Replace("\"", "")
+                     .Replace(":", ": ") // asegurar espacio luego de dos puntos
+                     .Replace("\r", "")
+                     .Replace("\n", "")
+                     .Replace("\t", "");
+
+        input = Regex.Replace(input, @"\s+", " ");
+
+        return input.Trim();
+    }
+}

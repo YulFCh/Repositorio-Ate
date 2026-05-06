@@ -1,0 +1,238 @@
+﻿@page "/formadministrado"
+@using MudBlazor
+@using SISFRONT.Service.Interface
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+@inject ProtectedSessionStorage SessionStorage
+@inject SessionService sessions
+@inject IJSRuntime JS
+@inject ISnackbar Snackbar
+@inject IPublicidadService PublicidadService
+@using System.ComponentModel.DataAnnotations
+
+
+
+<style>
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+        border-bottom: 1px solid var(--mud-palette-lines-default);
+        padding-bottom: 8px;
+    }
+
+    .section-title {
+        font-weight: 500;
+        color: var(--mud-palette-primary);
+    }
+</style>
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4 mb-4">
+
+
+    <MudPaper Class="pa-4" Elevation="3">
+        <MudForm @ref="_form" Model="dto" @bind-IsValid="@_success">
+
+            <!-- Sección de Identificación -->
+            <div class="section-header">
+                <MudIcon Icon="@Icons.Material.Filled.AssignmentInd" />
+                <MudText Typo="Typo.h6" Class="section-title">Identificación</MudText>
+            </div>
+
+            <MudGrid Spacing="2" Class="mb-3">
+                <MudItem xs="12" sm="5">
+                    <MudSelect @bind-Value="_model.tipoPersona"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               Label="Tipo de Persona" Required="true" RequiredError="Seleccione una opción"
+                               T="string">
+                        <MudSelectItem Value="@("1")">Persona Natural</MudSelectItem>
+                        <MudSelectItem Value="@("2")">Persona Jurídica</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" sm="7">
+                    <MudTextField @bind-Value="_model.Ruc"
+                                  Variant="Variant.Outlined" Label="N° Documento"
+                                  MaxLength="11"
+                                  Margin="Margin.Dense"
+                                  Required="true" RequiredError="El N° es obligatorio"
+                                  Clearable="true" />
+                </MudItem>
+            </MudGrid>
+
+
+            <MudGrid Spacing="2" Class="mb-3">
+
+                @if(_model.tipoPersona == "2") {
+
+
+                    <MudItem xs="12" sm="12">
+                        <MudTextField @bind-Value="dto.NombreContribuyente"
+                                      Margin="Margin.Dense"
+                                      Variant="Variant.Outlined" Label="Razón Social"
+                                      Required="true" RequiredError="Este campo es obligatorio"
+                                      For="@(() => _model.NombreORazon)"
+                                      Clearable="true" />
+                    </MudItem>
+                }
+                else {
+                    <MudItem xs="12" sm="4">
+                        <MudTextField @bind-Value="dto.Nombres"
+                                      Margin="Margin.Dense"
+                                      Variant="Variant.Outlined" Label="Nombre"
+                                      Required="true" RequiredError="Este campo es obligatorio"
+                                      Clearable="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudTextField @bind-Value="dto.ApellidoPat"
+                                      Margin="Margin.Dense"
+                                      Variant="Variant.Outlined" Label="Apellido Paterno"
+                                      Required="true" RequiredError="Este campo es obligatorio"
+                                      Clearable="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudTextField @bind-Value="dto.ApellidoMat"
+                                      Margin="Margin.Dense"
+                                      Variant="Variant.Outlined" Label="Apellido Materno"
+                                      Required="true" RequiredError="Este campo es obligatorio"
+                                      Clearable="true" />
+                    </MudItem>
+
+                }
+
+
+                <MudItem xs="12" sm="4">
+                    <MudTextField @bind-Value="dto.Direccion"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" Label="Domicilio Fiscal"
+                                  Required="true"
+                                  Clearable="true" />
+                </MudItem>
+                <MudItem xs="12" sm="2">
+                    <MudTextField @bind-Value="dto.NumeroPred"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" Label="Número:"
+                                  Clearable="true" />
+                </MudItem>
+                <MudItem xs="12" sm="2">
+                    <MudTextField @bind-Value="dto.Interior"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" Label="Interior:"
+                                  Clearable="true" />
+                </MudItem>
+                <MudItem xs="12" sm="2">
+                    <MudTextField @bind-Value="dto.Manzana"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" Label="Mz:"
+                                  Clearable="true" />
+                </MudItem>
+                <MudItem xs="12" sm="2">
+                    <MudTextField @bind-Value="dto.Lote"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" Label="Lt:"
+                                  Clearable="true" />
+                </MudItem>
+                <MudItem xs="12" sm="4">
+                    <MudTextField @bind-Value="dto.Telefono"
+                                  Variant="Variant.Outlined" Label="Teléfono"
+                                  MaxLength="9"
+                                  Margin="Margin.Dense"
+                                  Clearable="true" />
+                </MudItem>
+                <MudItem xs="12" sm="8">
+                    <MudTextField @bind-Value="dto.Correo"
+                                  Variant="Variant.Outlined"
+                                  Label="Correo Electrónico"
+                                  Margin="Margin.Dense"
+                                  Clearable="true" />
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudCollapse Expanded="@EsJuridica">
+                        <div class="section-header">
+                            <MudIcon Icon="@Icons.Material.Filled.AccountBalance" />
+                            <MudText Typo="Typo.h6" Class="section-title">Representante Legal</MudText>
+                        </div>
+                        <MudGrid Spacing="2">
+                            <MudItem xs="12" sm="6">
+                                <MudTextField @bind-Value="dto.NombresRl"
+                                              Margin="Margin.Dense"
+                                              Variant="Variant.Outlined" Label="Apellidos y Nombres"
+                                              Required="@EsJuridica" RequiredError="Nombre del representante es obligatorio"
+                                              Clearable="true" />
+                            </MudItem>
+                            <MudItem xs="12" sm="2">
+                                <MudSelect T="string"
+                                           @bind-value="dto.IdTipoDocRl"
+                                           Variant="Variant.Outlined"
+                                           Label="Documento"
+                                           Margin="Margin.Dense">
+                                    <MudSelectItem Value="@("001")">D.N.I.</MudSelectItem>
+                                    <MudSelectItem Value="@("002")">L.E.</MudSelectItem>
+                                    <MudSelectItem Value="@("003")">C.I.P.</MudSelectItem>
+                                    <MudSelectItem Value="@("004")">R.U.C.</MudSelectItem>
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="12" sm="4">
+                                <MudTextField @bind-Value="dto.NroDocRl"
+                                              Variant="Variant.Outlined" Label="DNI / C.E."
+                                              HelperText="DNI: 8 dígitos · CE: 9–12"
+                                              Margin="Margin.Dense"
+                                              Required="@EsJuridica" RequiredError="Documento del representante es obligatorio"
+                                              Clearable="true" />
+                            </MudItem>
+                            <MudItem xs="12" sm="6">
+                                <MudTextField @bind-Value="dto.NroPartidaE"
+                                              Variant="Variant.Outlined" Label="N° Partida y Asiento SUNARP"
+                                              Margin="Margin.Dense"
+                                              Required="@EsJuridica" RequiredError="Partida/Asiento es obligatorio"
+                                              Clearable="true" />
+                            </MudItem>
+                            <MudItem xs="12" sm="6">
+                                <MudTextField @bind-Value="dto.DireccionRl"
+                                              Variant="Variant.Outlined" Label="Domicilio Fiscal del Representante"
+                                              Margin="Margin.Dense"
+                                              Required="@EsJuridica" RequiredError="Domicilio del representante es obligatorio"
+                                              Clearable="true" />
+                            </MudItem>
+                            <MudItem xs="12" sm="6">
+                                <MudTextField @bind-Value="dto.NroTelefonoRl"
+                                              Variant="Variant.Outlined" Label="Teléfono del Representante"
+                                              MaxLength="9"
+                                              Margin="Margin.Dense"
+                                              Clearable="true" />
+                            </MudItem>
+                            <MudItem xs="12" sm="6">
+                                <MudTextField @bind-Value="dto.CorreoRl"
+                                              Variant="Variant.Outlined"
+                                              Margin="Margin.Dense"
+                                              Label="Correo del Representante"
+                                              InputType="InputType.Email"
+                                              Clearable="true" />
+                            </MudItem>
+                        </MudGrid>
+
+                    </MudCollapse>
+                </MudItem>
+            </MudGrid>
+            <!-- Divisor y botones de acción -->
+            <MudDivider Class="my-4" />
+            <div class="d-flex align-items-center justify-content-end gap-2">
+                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="Reset" StartIcon="@Icons.Material.Filled.Restore" Disabled="@_saving">Limpiar</MudButton>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" onclick="Submit" Disabled="@(!_success || _saving)">
+                    @if(_saving) {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="me-2" />
+                        <span>Guardando...</span>
+                    }
+                    else {
+                        <MudIcon Icon="@Icons.Material.Filled.Save" Class="me-2" />
+                        <span>Guardar</span>
+                    }
+                </MudButton>
+            </div>
+        </MudForm>
+    </MudPaper>
+</MudContainer>

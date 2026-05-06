@@ -1,0 +1,83 @@
+﻿@using SistemaLicencias.SHARED.DTOs
+@inject HttpClient Http
+@inject IDialogService DialogService
+
+<MudDialog MaxWidth="MaxWidth.Small" FullWidth="true">
+    <DialogContent>
+        <MudPaper Class="p-4" Elevation="0">
+
+            <MudStack Spacing="3">
+                <MudText Typo="Typo.h6">
+                    🛠 Modificar capacidad de subzona
+                </MudText>
+
+                <MudDivider />
+
+                <MudText Typo="Typo.subtitle1" Class="text-primary">
+                    <strong>@Subzona.Nombre</strong>
+                </MudText>
+
+                <MudGrid>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField Value="@Subzona.CapacidadBase.ToString()" Label="Capacidad Base" ReadOnly="true" Variant="Variant.Outlined" />
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6">
+                        <MudNumericField T="int"
+                                         @bind-Value="Subzona.CapacidadExtra"
+                                         Label="Capacidad Extra"
+                                         Min="0"
+                                         Immediate="true"
+                                         Variant="Variant.Outlined" />
+                    </MudItem>
+                </MudGrid>
+
+                <MudText Typo="Typo.caption" Class="text-secondary">
+                    Capacidad total: <strong>@(Subzona.CapacidadBase + Subzona.CapacidadExtra)</strong>
+                </MudText>
+
+                <MudDivider />
+
+                <MudStack Direction="Row" Spacing="2">
+                    <MudButton Variant="Variant.Filled" Color="Color.Success" OnClick="@Guardar" StartIcon="@Icons.Material.Filled.Save">Guardar</MudButton>
+                    <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="Cancelar" StartIcon="@Icons.Material.Filled.Close">Cancelar</MudButton>                    
+                </MudStack>
+            </MudStack>
+
+        </MudPaper>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public SubZonasAutApi Subzona { get; set; } = new();
+
+    private string _baseUrl = "http://192.168.0.139:148";
+    //private string _baseUrl = "http://localhost:5297";
+
+    private async Task Guardar() {
+        try {
+            var rs = await Http.PutAsync($"{_baseUrl}/api/MarkMaps/update-capacidad/{Subzona.idSubzona}?capacidad={Subzona.CapacidadExtra}", null);
+
+            if(rs.IsSuccessStatusCode) {
+                MudDialog.Close(DialogResult.Ok(Subzona));
+            }
+            else {
+                var error = await rs.Content.ReadAsStringAsync();
+                await MostrarError($"Error al guardar: {error}");
+            }
+        }
+        catch(Exception ex) {
+            await MostrarError($"Error inesperado: {ex.Message}");
+        }
+    }
+
+    private async Task MostrarError(string mensaje) {
+        var parameters = new DialogParameters { ["ContentText"] = mensaje };
+        await DialogService.ShowMessageBox("Error", mensaje, "Ok");
+    }
+
+    private void Cancelar() {
+        MudDialog.Cancel();
+    }
+}

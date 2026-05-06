@@ -1,0 +1,144 @@
+﻿@inject SessionService session
+
+
+<MudNavMenu>
+    <MudImage Src="img/logoblanco.png"
+              Class="w-100 px-2 pt-2 mx-auto d-block"
+              Style="height: auto; max-height: 90px;" />
+
+    <MudDivider Class="my-2" />
+
+    @foreach(var item in NavItems) {
+        if(item.Children?.Any() == true) {
+            <MudNavGroup Title="@item.Title" Icon="@item.Icon" Expanded="true">
+                @foreach(var child in item.Children) {
+                    if(child.Children?.Any() == true) {
+                        <MudNavGroup Title="@child.Title" Icon="@child.Icon">
+                            @foreach(var grand in child.Children) {
+                                <MudNavLink Href="@grand.Href" Icon="@grand.Icon">@grand.Title</MudNavLink>
+                            }
+                        </MudNavGroup>
+                    }
+                    else {
+                        <MudNavLink Href="@child.Href" Icon="@child.Icon">@child.Title</MudNavLink>
+                    }
+                }
+            </MudNavGroup>
+        }
+        else {
+            <MudNavLink Href="@item.Href" Icon="@item.Icon">@item.Title</MudNavLink>
+        }
+    }
+</MudNavMenu>
+
+
+@code {
+    private string? rolUsuario;
+
+    private List<NavItem> NavItems = new();
+
+    protected override async Task OnInitializedAsync() {
+        rolUsuario = session.UsuarioActual?.id_perfil;
+
+        NavItems = GetMenuItemsForRole(rolUsuario);
+    }
+
+    private List<NavItem> GetMenuItemsForRole(string? role) {
+        return role switch {
+            "0000019" => new List<NavItem> {
+                new NavItem {
+                    Title = "Ambulatorio",
+                    Icon = Icons.Material.Filled.Settings,
+                    Children = new() {
+                        new NavItem {
+                            Title = "Mantenimientos",
+                            Icon = Icons.Material.Filled.Settings,
+                            Children = new() {
+                                new NavItem { Title = "Agregar SubZona", Href = "/mant-subzona", Icon = Icons.Material.Filled.AddLocation },
+                                new NavItem { Title = "Agregar Espacios", Href = "/mant-modificar", Icon = Icons.Material.Filled.EditLocation },
+                                //new NavItem { Title = "Modificar Giros", Href = "/mant-giros", Icon = Icons.Material.Filled.Settings },
+                                new NavItem { Title = "Modificar Giros", Href = "/mant-giros2", Icon = Icons.Material.Filled.Description },
+                             }
+                         },
+                        new NavItem { Title = "Personas", Href = "/form-solicitante", Icon = Icons.Material.Filled.Person },
+                        
+                        new NavItem { Title = "Solicitud", Href = "/form-solicitud", Icon = Icons.Material.Filled.Description },
+                        new NavItem { Title = "Emitir Resolución", Href = "/emitirres", Icon = Icons.Material.Filled.Description },
+                        new NavItem { Title = "Emitir Certificados", Href = "/emitircert", Icon = Icons.Material.Filled.Description },
+                        new NavItem { Title = "Consultas", Href = "/consultas", Icon = Icons.Material.Filled.Search },
+                        new NavItem { Title = "Mapa Consultas", Href = "/conMaps", Icon = Icons.Material.Filled.Map },
+                        //new NavItem { Title = "Consultas Grafico", Href = "/repgrafico", Icon = Icons.Material.Filled.Map }
+                    }
+                },                
+                /*
+                
+                new NavItem {
+                    Title = "EPE",
+                    Icon = Icons.Material.Filled.Map,
+                    Children = new(){
+                        
+                        new NavItem {
+                            Title = "Mantenimiento",
+                            Icon = Icons.Material.Filled.Settings,
+                            Children = new() {
+                                new NavItem { Title = "Agregar SubZona", Href = "", Icon = Icons.Material.Filled.AddLocation },
+                                new NavItem { Title = "Agregar Espacios", Href = "", Icon = Icons.Material.Filled.EditLocation },
+                            }
+                        },
+                        
+                        new NavItem { Title = "Administrado", Href = "/formadministrado", Icon = Icons.Material.Filled.AddLocation },
+                        new NavItem { Title = "SolicitudEPE", Href = "/solictudepe", Icon = Icons.Material.Filled.Description },
+                        new NavItem { Title = "Emitir Resolución", Href = "/emitirresepe", Icon = Icons.Material.Filled.Description },
+                        new NavItem { Title = "Emitir Certificados", Href = "/emitircertepe", Icon = Icons.Material.Filled.Description },
+                        new NavItem { Title = "Mapa Consultas", Href = "/conMapsEPE", Icon = Icons.Material.Filled.Map }                        
+                       //new NavItem { Title = "Consultas", Href = "/repgrafico", Icon = Icons.Material.Filled.Search },
+
+                    }
+
+                }
+                */
+            },
+            
+            /*
+            "0000059" => new List<NavItem>
+                {
+                new NavItem { Title = "Emitir Certificados", Href = "/emitircert", Icon = Icons.Material.Filled.Description },
+                new NavItem { Title = "Emitir Resolución", Href = "/emitirres", Icon = Icons.Material.Filled.Description },
+                new NavItem { Title = "Consultas", Href = "/consultas", Icon = Icons.Material.Filled.Search },
+                new NavItem { Title = "Mapa Consultas", Href = "/conMaps", Icon = Icons.Material.Filled.Map }
+            },
+
+            "0000009" => new List<NavItem>
+                {
+                new NavItem { Title = "Personas", Href = "/form-solicitante", Icon = Icons.Material.Filled.Person },
+                new NavItem { Title = "Solicitud", Href = "/form-solicitud", Icon = Icons.Material.Filled.Description },
+                new NavItem { Title = "Mapa Consultas", Href = "/conMaps", Icon = Icons.Material.Filled.Map },
+            },
+
+            "0000082" => new List<NavItem>
+             {
+                new NavItem { Title = "Consultas", Href = "/consultas", Icon = Icons.Material.Filled.Search },
+                new NavItem { Title = "Mapa Consultas", Href = "/conMaps", Icon = Icons.Material.Filled.Map }
+            },
+            */
+            _ => new List<NavItem>
+            {
+                new NavItem { Title = "Personas", Href = "/form-solicitante", Icon = Icons.Material.Filled.Person },
+                new NavItem { Title = "Solicitantes", Href = "/form-solicitantes", Icon = Icons.Material.Filled.Person },
+                new NavItem { Title = "Solicitud", Href = "/form-solicitud", Icon = Icons.Material.Filled.Description },                
+                new NavItem { Title = "Emitir Certificados", Href = "/emitircert", Icon = Icons.Material.Filled.Description },
+                new NavItem { Title = "Emitir Resolución", Href = "/emitirres", Icon = Icons.Material.Filled.Description },
+                new NavItem { Title = "Consultas", Href = "/consultas", Icon = Icons.Material.Filled.Search },
+                new NavItem { Title = "Mapa Consultas", Href = "/conMaps", Icon = Icons.Material.Filled.Map },
+                
+            } 
+        };
+    }
+
+    public class NavItem {
+        public string? Title { get; set; }
+        public string? Href { get; set; }
+        public string? Icon { get; set; }
+        public List<NavItem>? Children { get; set; }
+    }
+}

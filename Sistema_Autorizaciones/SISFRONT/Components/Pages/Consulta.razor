@@ -1,0 +1,123 @@
+﻿@page "/consultas"
+@using MudBlazor
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+@inject ProtectedSessionStorage SessionStorage
+@inject IHttpContextAccessor HttpContextAccessor
+@inject SessionService sessions
+@inject IJSRuntime JS
+@using SistemaLicencias.SHARED.DTOs
+@using SISFRONT.Components.Utilities;
+@using SISFRONT.Components.Dialogs;
+
+
+<MudContainer MaxWidth="MaxWidth.False" Class="mb-6">
+    <MudText Typo="Typo.h5" Class="mt-4 mb-4 text-center text-primary fw-bold">
+        📋 Consulta de Autorizaciones
+    </MudText>
+
+    <MudTabs Elevation="0" Class="rounded-xl shadow-sm bg-white" Centered="true">
+        <MudTabPanel Text="Autorizaciones" Icon="@Icons.Material.Filled.Search" >
+            <MudPaper Class="p-4 mb-6 shadow-sm  " Elevation="0">
+
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" sm="4" md="3">
+                        <MudDateRangePicker @bind-DateRange="filtroFechaResolucion" Label="📅 Fecha Resolución" Dense="true" />
+                    </MudItem>
+
+                    <MudItem xs="12" sm="4" md="3">
+                        <MudTextField T="string" @bind-Value="filtroAutorizacion" Label="🔢 N° Autorización" Dense="true" />
+                    </MudItem>
+
+                    <MudItem xs="12" sm="4" md="3">
+                        <MudTextField T="string" @bind-Value="filtroRazonSocial" Label="🧑‍💼 Solicitante" Dense="true" />
+                    </MudItem>
+
+                    <MudItem xs="12" sm="4" md="3">
+                        <MudTextField T="string" @bind-Value="filtroZona" Label="🌐 Zona" Dense="true" />
+                    </MudItem>
+
+                    <MudItem xs="12" class="d-flex justify-end align-items-center mt-2">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="AplicarFiltros" StartIcon="@Icons.Material.Filled.Search">
+                            Buscar
+                        </MudButton>
+
+                        <MudButton OnClick="ExportarExcel" Color="Color.Success" StartIcon="@Icons.Material.Filled.Download">
+                            Exportar Excel
+                        </MudButton>
+
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+            <MudPaper Class="p-6 shadow-md rounded-2xl" Elevation="1">
+
+                @if(isLoading) {
+                    <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" Class="d-block mx-auto my-6" />
+                }
+                else if(filteredTable.Any()) {
+                    <MudTable T="SolicitudesAPI" Items="filteredTable" SortLabel="Ordenar por"
+                              Hover="true" Bordered="true" Dense="true" Elevation="1"
+                              Breakpoint="Breakpoint.Sm"
+                              Class="rounded-lg shadow-sm"
+                              Style="font-size: 12px;">
+                        <HeaderContent>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="@((SolicitudesAPI x) => x.nroAutorizacion)">N° Autorización</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="@((SolicitudesAPI x) => x.nroExpediente)">N° Expediente</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="@((SolicitudesAPI x) => x.nroResolucion)">N° Resolución</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="@((SolicitudesAPI x) => x.razon_social)">Solicitante</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="@((SolicitudesAPI x) => x.nombSZ)">Zona</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="@((SolicitudesAPI x) => x.fechaRegistro)">Fec. Registro</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="@((SolicitudesAPI x) => x.NombreComputado)">Giros</MudTableSortLabel>
+                            </MudTh>
+                        </HeaderContent>
+
+                        <RowTemplate>
+                            <MudTd>@context.nroAutorizacion</MudTd>
+                            <MudTd>@context.nroExpediente - @context.fecha_expediente.ToString("yyyy")</MudTd>
+                            <MudTd>@context.nroResolucion - @context.fechaResolucion.ToString("yyyy")</MudTd>
+                            <MudTd>@context.razon_social</MudTd>
+                            <MudTd>@(string.IsNullOrWhiteSpace(context.nombSZ) ? "N/R" : context.nombSZ)</MudTd>
+                            <MudTd>@context.fechaRegistro.ToString("dd/MM/yyyy")</MudTd>
+                            <MudTd>@context.NombreComputado-@context.giros</MudTd>
+                        </RowTemplate>
+
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="new int[] { 20, 50 }" />
+                        </PagerContent>
+                    </MudTable>
+
+                }
+                else {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Class="text-center">
+                        No se encontraron registros que coincidan con los filtros aplicados.
+                    </MudAlert>
+                }
+            </MudPaper>
+        </MudTabPanel>
+        <!-- Ejemplo de otra pestaña: pon aquí tu otra vista -->
+        <MudTabPanel Text="Otra Vista" Icon="@Icons.Material.Filled.Assessment">
+            <div class="p-4">
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                    Aquí va tu otra vista / componente (reportes, dashboard, etc.)
+                </MudAlert>
+            </div>
+        </MudTabPanel>
+    </MudTabs>
+
+</MudContainer>
+
+

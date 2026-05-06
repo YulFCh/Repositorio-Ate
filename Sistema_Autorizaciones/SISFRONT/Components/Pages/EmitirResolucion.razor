@@ -1,0 +1,245 @@
+﻿@page "/emitirres"
+@using MudBlazor
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+@inject ProtectedSessionStorage SessionStorage
+@inject IHttpContextAccessor HttpContextAccessor
+@inject SessionService sessions
+@inject IJSRuntime JS
+@using SistemaLicencias.SHARED.DTOs
+@using SISFRONT.Components.Utilities;
+@using SISFRONT.Components.Dialogs;
+@using System.Text.RegularExpressions
+
+<MudContainer MaxWidth="MaxWidth.False" Class="mt-10 px-6 mb-4">
+    <MudPaper Class="p-6 mx-auto shadow-md rounded-2xl" Elevation="0" Style="max-width:1600px;">
+        <MudText Typo="Typo.h5" Class="mb-6 text-center fw-bold text-primary">
+            📋 Listado de Solicitudes Pendientes
+        </MudText>
+        
+        @if(isLoading) {
+            <MudProgressCircular Indeterminate="true" Color="Color.Primary" Size="Size.Large" Class="d-block mx-auto my-6" />
+        }
+        else if(soli is not null && soli.Any()) {
+            <MudTable Items="filteredTable"
+                      Hover="true"
+                      Bordered="true"
+                      Dense="true"
+                      Elevation="1"
+                      Breakpoint="Breakpoint.Sm"
+                      Class="rounded-lg shadow-sm text-sm"
+                      Style="font-size: 9px;">
+             
+
+                <ToolBarContent>
+                    <MudText Typo="Typo.subtitle2" Class="fw-bold">Total: @soli.Count registro(s)</MudText>
+                    <MudSpacer />
+                    <MudTextField T="string" Placeholder="Buscar por N°. Autorizacion o solicitante" @bind-Value="searchTerm"
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Search"
+                                  Class="me-4" />
+                </ToolBarContent>
+
+                <HeaderContent>
+                    
+                    <MudTh>N° Expediente</MudTh>
+                    <MudTh>Solicitante</MudTh>
+                    <MudTh>Zona</MudTh>
+                    <MudTh>Giro</MudTh>
+                    <MudTh>Fec.Registro</MudTh>
+                    <MudTh>Estado</MudTh>
+                    <MudTh class="text-center"></MudTh>
+                </HeaderContent>
+
+                <RowTemplate>
+                    
+                    <MudTd>@context.nroExpediente - @context.fecha_expediente.ToString("yyyy")</MudTd>
+                    <MudTd>@context.razon_social</MudTd>
+                    <MudTd>@context.nombSZ</MudTd>
+                    <MudTd>@context.NombreComputado</MudTd>
+                    <MudTd>@context.fechaRegistro</MudTd>
+                    <MudTd>TRAMITE EN PROCESO</MudTd>
+                    <MudTd Class="text-center">
+                        <MudTooltip Text="Actualizar">
+                            <MudIconButton Icon="@Icons.Material.Filled.InsertDriveFile"
+                                           Color="Color.Info"
+                                           Size="Size.Small"
+                                           Class="ms-1"
+                                           OnClick="() => getDialogResolucion(context.idSolicitud)" />
+                        </MudTooltip>
+                        <MudTooltip Text="Abrir Carpeta">
+                            <MudIconButton Icon="@Icons.Material.Filled.FolderOpen"
+                                           Color="Color.Secondary"
+                                           Size="Size.Small"
+                                           Class="ms-1"
+                                           OnClick="() => GetDialogDocument2(context.idSolicitud)" />
+                        </MudTooltip>
+
+                        <MudTooltip Text="Anular">
+                            <MudIconButton Icon="@Icons.Material.Filled.Cancel"
+                                           Color="Color.Error"
+                                           Size="Size.Small"
+                                           Class="ms-1"
+                                           Disabled="@isBtnDisable"
+                                           OnClick="() => MostrarDialogoDesactivar(context.idSolicitud)" />
+                        </MudTooltip>
+                    </MudTd>
+                </RowTemplate>
+
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new int[] {10, 20, 50}" />
+                </PagerContent>
+            </MudTable>
+
+        }
+        else {
+            <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Class="text-center">
+                No se encontraron registros pendientes.
+            </MudAlert>
+        }
+    </MudPaper>
+</MudContainer>
+
+@code {
+
+    private string _baseUrl = "http://192.168.0.139:148";
+    //private string _baseUrl = "http://localhost:5297";
+    private List<SolicitudesAPI> soli = new();
+    private SolicitudDTO solDTO = new();
+
+    private UpdateEstadoDTO uptEstado = new();
+    private GenerarPdfConImagenDto pdfDTO = new();
+    private bool isLoading = true;
+    private string searchTerm = "";
+    private string? base64Pdf;
+    private bool isLoadingPdf = false;
+    private string clientIp;
+    private string hostName;
+
+    private bool isBtnDisable = true;
+
+    protected override async Task OnInitializedAsync() {
+        if(sessions.UsuarioActual.id_perfil == "0000019" || sessions.UsuarioActual.id_perfil == "0000059") {
+            isBtnDisable = false;
+        }
+
+        await CargarSolicitudes();
+    }
+
+    private async Task CargarSolicitudes() {
+        isLoading = true;
+        try {
+            
+            var response = await Http.GetFromJsonAsync<ApiresponseSolicitudes>($"{_baseUrl}/api/Solicitud/getallsol/1");
+
+            if(response is not null)
+                soli = response.response;
+        }
+
+        catch(Exception ex) {
+            Console.WriteLine($"Error al cargar datos: {ex.Message}");
+        }
+        finally {
+            isLoading = false;
+            StateHasChanged(); // Asegura que se refresque la vista
+        }
+    }
+
+    private IEnumerable<SolicitudesAPI> filteredTable => soli.Where(x => {
+        bool matchesText = string.IsNullOrWhiteSpace(searchTerm)
+            || (!string.IsNullOrWhiteSpace(x.razon_social) && x.razon_social.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+      || (!string.IsNullOrWhiteSpace(x.nroExpediente) && x.nroExpediente.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
+        return matchesText;
+    });
+
+    private async Task getDialogResolucion(int idSolic ) {
+        var parameters = new DialogParameters {
+        { "IdSolicitud", idSolic }
+    };
+
+        var options = new DialogOptions {
+                CloseButton = true,
+                MaxWidth = MaxWidth.Small,
+                FullWidth = true
+            };
+
+        var dialog = DialogService.Show<DialogResolucion>("Emitir Resolución", parameters, options);
+
+        var result = await dialog.Result;
+
+        if(!result.Canceled) {
+            // Aquí puedes refrescar datos, mostrar mensajes, etc.
+            Console.WriteLine("Resolución guardada exitosamente desde el diálogo.");
+            await CargarSolicitudes();
+        }
+    }
+
+    private async Task GetDialogDocument2(int id) {
+        var parameters = new DialogParameters
+                        {
+        { "IdSolicitud", id } // solo si necesitas pasar un valor al diálogo
+    };
+
+        var options = new DialogOptions {
+                MaxWidth = MaxWidth.Medium,
+                CloseButton = true,
+                FullWidth = true,
+                BackdropClick = true
+            };
+
+        var dialog = DialogService.Show<DialogDocument>("📎 Documentos adjuntos", parameters, options);
+        var result = await dialog.Result;
+
+        if(!result.Canceled) {
+            // Puedes recuperar la lista de documentos si lo devuelves con Close(DialogResult.Ok(data))
+            //Console.WriteLine("wa");
+        }
+    }
+
+    private async Task MostrarDialogoDesactivar(int id) {
+        var parameters = new DialogParameters {
+        { "ContentText", "¿Estás seguro de deshabilitar esta solicitud?" }
+    };
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+
+        var dialog = DialogService.Show<DialogConfirmar>("Confirmación", parameters, options);
+        var result = await dialog.Result;
+
+        if(!result.Canceled) {
+
+            await DesactivarSolicitud(id);
+            await RecargarPagina(); // Método personalizado para refrescar o recargar tabla
+        }
+    }
+
+    private async Task DesactivarSolicitud(int id) {
+
+        var uptEstado = new UpdateEstadoDTO {
+                idSolicitud = id,
+                estado = "2",
+                operadorActualiza = sessions.UsuarioActual.login,
+                estacionActualiza = sessions.UsuarioActual.host
+            };
+
+        var url = $"{_baseUrl}/api/Solicitud/updateEstado";
+        var response = await Http.PostAsJsonAsync(url, uptEstado);
+
+        if(response.IsSuccessStatusCode) {           
+            Console.WriteLine("Solicitud desactivada con éxito");
+        }
+        else {
+            var error = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Error al desactivar: {error}");
+        }
+    }
+
+    private async Task RecargarPagina() {
+        await CargarSolicitudes(); 
+        StateHasChanged();
+    }
+
+
+
+}

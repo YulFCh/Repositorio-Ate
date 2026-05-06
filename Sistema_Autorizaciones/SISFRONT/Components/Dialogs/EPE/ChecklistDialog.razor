@@ -1,0 +1,35 @@
+﻿@using MudBlazor
+
+<MudDialog>
+    <DialogContent>
+        <MudList Dense="true" T="string">
+            @foreach (var it in Items)
+            {
+                <MudListItem>
+                    <MudCheckBox
+                        Checked="@Seleccionados.Contains(it)"
+                        CheckedChanged="(v) => Toggle(it, v)" />
+                    <MudText Class="ms-2">@it</MudText>
+                </MudListItem>
+            }
+        </MudList>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="() => MudDialog.Close()">Listo</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public IEnumerable<string> Items { get; set; } = Array.Empty<string>();
+    [Parameter] public HashSet<string> Seleccionados { get; set; } = new();
+
+    private void Toggle(string it, bool v)
+    {
+        if (v) Seleccionados.Add(it);
+        else   Seleccionados.Remove(it);
+
+        StateHasChanged();
+    }
+}

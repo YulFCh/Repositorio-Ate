@@ -1,0 +1,6 @@
+@SISLICBACK_HostAddress = http://localhost:5297
+
+GET {{SISLICBACK_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,139 @@
+﻿@page "/mant-subzona"
+@using MudBlazor
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+@inject ProtectedSessionStorage SessionStorage
+@inject IHttpContextAccessor HttpContextAccessor
+@inject SessionService sessions
+@inject GoogleMapsInterop googleMapsInterop
+@inject IJSRuntime JS
+@using SistemaLicencias.SHARED.DTOs
+@using SISFRONT.Components.Utilities;
+@using SISFRONT.Components.Dialogs;
+
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="my-5 p-5">
+    <MudPaper Class="p-4" Elevation="0">
+        <MudText Typo="Typo.h5" Class="mb-4">📋 Agregar Subzonas</MudText>
+
+        <MudGrid>
+            <MudItem xs="12" sm="6" md="4">
+                <MudSelect T="int" Label="Selecciona una zona" @bind-Value="_zonaSeleccionada" Placeholder="Seleccione:" Dense="true" Class="mb-3">
+                    <MudSelectItem Value="0" Disabled="true">Seleccione:</MudSelectItem>
+                    @foreach(var zona in zonas) {
+                        <MudSelectItem Value="@zona.IdZona">@zona.Nombre</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="6" md="4">
+                <MudTextField @bind-Value="_subzona.Nombre" Label="Nombre Subzona" Required="true" />
+            </MudItem>
+
+
+            <MudItem xs="12" sm="6" md="4">
+                <MudTextField @bind-Value="_subzona.Coordenadas" Label="Coordenadas" Placeholder="-75.123, -12.456, 0" Required="true" />
+            </MudItem>
+
+
+
+            <MudItem xs="12" sm="4">
+                <MudSelect T="string" Label="Regulación" @bind-Value="_subzona.Regulacion" Required="true" Placeholder="Seleccionar:">
+                    <MudSelectItem Value="@("REGULADO")">REGULADO</MudSelectItem>
+                    <MudSelectItem Value="@("NO REGULADO")">NO REGULADO</MudSelectItem>
+                </MudSelect>
+
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudStack Row Spacing="2">
+                    <MudButton Color="Color.Primary" OnClick="Guardar">💾 Guardar</MudButton>
+                    <MudButton Color="Color.Default" OnClick="Limpiar">🧹 Limpiar</MudButton>
+                </MudStack>
+            </MudItem>
+        </MudGrid>
+       
+        <MudDivider Class="my-4" />
+        <!--
+                <div id="my_map" style="height: 400px; width: 50%;"></div>-->
+        <div id="my_map" style="height: 400px; width: 100%;"></div>
+        
+
+
+
+
+
+    </MudPaper>
+
+</MudContainer>
+@code {
+    private SubZonaDTO _subzona = new() { Tipo = "Point" };
+    private DotNetObjectReference<MantAddSubZona>? _dotNetRef;
+    private List<ZonasAutApi> zonas = new();
+    private int _zonaSeleccionada = 0;
+    private string _baseUrl = "http://192.168.0.139:148";
+    //private string _baseUrl = "http://localhost:5297";
+    
+
+
+
+    protected override async Task OnInitializedAsync() {
+        var rs = await Http.GetFromJsonAsync<ZonasAutDTO>($"{_baseUrl}/api/Solicitud/getzonam");
+        zonas = rs.response;
+    }
+
+
+    public string[] SubzonaLabels = new[] { "Subzona A", "Subzona B", "Subzona C", "Subzona D" };
+
+
+
+    private async Task Guardar() {
+        if(string.IsNullOrWhiteSpace(_subzona.Nombre) || string.IsNullOrWhiteSpace(_subzona.Coordenadas)) {
+            await DialogService.ShowMessageBox("⚠️ Validación", "Nombre y coordenadas son obligatorios.");
+            return;
+        }
+
+        _subzona.IdZona = _zonaSeleccionada;
+        _subzona.operadorRegistra = sessions.UsuarioActual.login;
+
+
+        var response = await Http.PostAsJsonAsync($"{_baseUrl}/api/MarkMaps/addsubzona", _subzona);
+        if(response.IsSuccessStatusCode) {
+            await DialogService.ShowMessageBox("Aviso", "SubZona Agregada");
+            Limpiar();
+        }
+        else {
+            await DialogService.ShowMessageBox("❌ Error", "No se pudo guardar la subzona.");
+        }
+    }
+
+    private void Limpiar() {
+        _subzona = new() { Tipo = "Point" };
+    }
+
+
+
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if(firstRender) {
+            _dotNetRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("googleMaps.initMap", _dotNetRef);
+        }
+    }
+
+
+    [JSInvokable]
+    public async Task OnMapClick(double lat, double lng) {
+        // Formato: lng,lat,0 (orden importante)
+        _subzona.Coordenadas = $"{lng},{lat},0";
+
+        await googleMapsInterop.SetSingleMarker(lat, lng, "", "");
+
+        StateHasChanged(); // <- Esto refresca la UI
+
+        // Feedback visual opcional
+
+    }
+}
+

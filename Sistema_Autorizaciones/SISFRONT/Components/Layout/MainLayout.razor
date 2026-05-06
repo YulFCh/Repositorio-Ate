@@ -1,0 +1,43 @@
+﻿    @inherits LayoutComponentBase
+    @inject ProtectedSessionStorage SessionStorage
+    @inject NavigationManager nav
+    @using SISFRONT.Components.Utilities
+    @using SistemaLicencias.SHARED.DTOs
+    @inject SessionService services
+
+    <MudThemeProvider />
+    <MudPopoverProvider />
+    <MudDialogProvider />
+    <MudSnackbarProvider />
+
+    <SessionGuard TUser="rsLogin">
+    <MudLayout>
+        <MudAppBar Style="background-color: #043053; color: white;">
+
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="DrawerToggle" />
+        Producción - User | @(string.IsNullOrEmpty(services.UsuarioActual.login) ? "USUARIO" : services.UsuarioActual.login.ToUpper())
+
+        </MudAppBar>
+        <MudDrawer @bind-Open="_drawerOpen" Style="background-color: #043053; color: white;">
+
+            <NavMenu />
+
+        </MudDrawer>
+        <MudMainContent>
+            @Body
+        </MudMainContent>
+    </MudLayout>
+    </SessionGuard>
+@code {
+    bool _drawerOpen = true;
+
+    void DrawerToggle() => _drawerOpen = !_drawerOpen;
+
+    protected override async Task OnInitializedAsync() {
+
+        // Asegura que esté cargado desde SessionGuard
+        while(!services.SesionCargada) {
+            await Task.Delay(50); // espera pasiva, muy ligera
+        }
+    }
+}

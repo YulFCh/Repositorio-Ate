@@ -1,0 +1,27 @@
+﻿@inject IJSRuntime JSRuntime
+@using SistemaLicencias.SHARED.DTOs
+
+<div id="my_map" style="height: 400px; width: 50%;"></div>
+
+@code {
+    [Parameter] public EventCallback<CoordenadasDTO> OnUbicacionSeleccionada { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if(firstRender) {
+            var dotNetRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("googleMaps.initMap", dotNetRef);
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnMapClick(double lat, double lng) {
+        var coordenada = new CoordenadasDTO {
+                Lat = lat,
+                Lng = lng,
+                Titulo = "Ubicación seleccionada",
+                Contenido = "<b>N° de Licencia: 88888</b>"
+            };
+
+        await OnUbicacionSeleccionada.InvokeAsync(coordenada);
+    }
+}

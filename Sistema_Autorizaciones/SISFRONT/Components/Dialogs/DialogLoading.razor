@@ -1,0 +1,49 @@
+﻿<MudDialog Class="loading-dialog">
+    <DialogContent>
+        <div class="loading-container">
+            <MudProgressCircular Indeterminate="true" Size="Size.Large" Color="Color.Primary" Class="mb-4" />
+
+            <MudText Typo="Typo.h6" Class="fw-bold text-center">
+                @LoadingMessage
+            </MudText>
+
+            @if(!string.IsNullOrWhiteSpace(SecondaryMessage)) {
+                <MudText Typo="Typo.body2" Class="mt-2 text-center text-muted">
+                    @SecondaryMessage
+                </MudText>
+            }
+        </div>
+    </DialogContent>
+</MudDialog>
+
+<style>
+    .loading-dialog {
+        border-radius: 16px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        padding: 24px;
+    }
+
+    .loading-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 200px;
+        padding: 1rem;
+        text-align: center;
+    }
+
+    .mud-dialog-content {
+        padding: 0 !important;
+    }
+</style>
+
+@code {
+    [Parameter] public string LoadingMessage { get; set; } = "Procesando...";
+    [Parameter] public string? SecondaryMessage { get; set; }
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; }
+
+    public void CerrarDialogo() => MudDialog?.Close(DialogResult.Ok(true));
+}
+

@@ -1,0 +1,31 @@
+﻿@page "/conMapsEPE"
+@using MudBlazor
+@using SistemaLicencias.SHARED.DTOs
+@using SISFRONT.Components.Utilities
+@inject IJSRuntime JS
+@inject HttpClient Http
+@inject GoogleMapsInterop MapsInterop
+
+
+
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="my-10">
+
+    <!--
+    <MudGrid>
+
+        <MudItem xs="12" md="6" Class="d-flex align-items-end">
+            <MudButton Color="Color.Primary" OnClick="BuscarAnuncios" Variant="Variant.Filled">
+                Buscar
+            </MudButton>
+        </MudItem>
+
+    </MudGrid>
+    -->
+
+    <div id="my_map" style="height: 600px; width: 100%; margin-top:20px; border-radius:10px;"></div>
+
+
+</MudContainer>
+
+

@@ -1,0 +1,76 @@
+﻿@using MudBlazor
+@inject IDialogService DialogService
+@inject IGirosService GiroService
+@using SistemaLicencias.SHARED.DTOs
+@using SISFRONT.Components.Utilities;
+@using SISFRONT.Components.Dialogs;
+
+<MudPaper Class="p-4 rounded-lg">
+    <MudText Typo="Typo.h6">Listado de Giros Principales</MudText>
+
+    <MudTable Items="girosPrincipales" Dense="true" Hover="true" Bordered="true">
+        <HeaderContent>
+            <MudTh>ID</MudTh>
+            <MudTh>Nombre</MudTh>
+            <MudTh>Estado</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.IdGiroPrincipal</MudTd>
+            <MudTd>@context.Nombre</MudTd>
+            <MudTd>
+                <MudChip T="string" Color="@(context.estado == 1 ? Color.Success : Color.Error)">
+                    @(context.estado == 1 ? "Activo" : "Inactivo")
+                </MudChip>
+            </MudTd>
+            <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                               Color="Color.Primary"
+                               OnClick="@(() => AbrirDialogoEditar(context))" />
+                <!--<MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" />-->
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager PageSizeOptions="new int[] { 10,15,20, 50 }" />
+        </PagerContent>
+    </MudTable>
+</MudPaper>
+
+@code {
+    private List<GiroPrincipal> girosPrincipales = new();
+
+    protected override async Task OnInitializedAsync() {
+        await LoadComboPrincipal();
+    }
+
+    private async Task LoadComboPrincipal() {
+        girosPrincipales = await GiroService.ObtenerGirosPorTipoAsync<GiroPrincipal>(1);
+    }
+
+    private async Task AbrirDialogoEditar(GiroPrincipal principal) {
+
+        GiroFlexible rs = new GiroFlexible {
+                TipoRegistro = 3,
+                //IdGiroDetalle = detalle.IdDetalleGiro,
+                Nombre = principal.Nombre,
+                Estado = principal.estado,
+                IdGiroPrincipal = principal.IdGiroPrincipal
+                //IdGiroComplementario = detalle.IdGiroComplementario
+            };
+
+        var parameters = new DialogParameters {
+                ["giroFlex"] = rs,
+            };
+
+        var options = new DialogOptions { CloseButton = true, MaxWidth = MaxWidth.Small, FullWidth = true };
+
+        var dialog = DialogService.Show<DialogGiros>("Editar Giro Principal", parameters, options);
+
+        var result = await dialog.Result;
+
+        if(!result.Canceled) {
+            await LoadComboPrincipal(); // recarga la tabla
+        }
+    }
+
+}

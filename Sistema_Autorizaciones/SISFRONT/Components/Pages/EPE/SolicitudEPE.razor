@@ -1,0 +1,437 @@
+﻿@page "/solictudepe"
+@using MudBlazor
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+@inject ProtectedSessionStorage SessionStorage
+@inject IHttpContextAccessor HttpContextAccessor
+@inject SessionService sessions
+@inject IJSRuntime JS
+@inject IGirosService GiroService
+@using SistemaLicencias.SHARED.DTOs
+@using SISFRONT.Components.Utilities;
+@using SISFRONT.Components.Dialogs.EPE;
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-8 mb-12">
+    <MudPaper Class="p-6 card-soft" Elevation="1">
+        <MudForm @ref="_form" Model="_u" Validated="OnValidated">
+
+            <MudTabs Elevation="0" Rounded="true" Centered="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+                <MudTabPanel Text="FORMULARIO">
+
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12" sm="3">
+                            <MudDatePicker Label="Fecha de Solicitud"
+                                           @bind-Date="_u.FechaSolicitud"
+                                           Dense="true"
+                                           Editable="true"
+                                           Mask="@(new DateMask("dd/MM/yyyy"))"
+                                           DateFormat="dd/MM/yyyy"
+                                           Required="true"
+                                           Margin="Margin.Dense"
+                                           Placeholder="dd/mm/yyyy" />
+                        </MudItem>
+                        <MudItem xs="12" sm="3">
+                            <MudSelect T="string" @bind-Value="_u.TipoSolitud" Label="Tipo Solicitud" Margin="Margin.Dense">
+                                <MudSelectItem Value=@("0") Disabled="true">SELECCIONE:</MudSelectItem>
+                                <MudSelectItem Value=@("1")>INDETERMINADA</MudSelectItem>
+                                <MudSelectItem Value=@("2")>TEMPORAL</MudSelectItem>
+                                <MudSelectItem Value=@("3")>CAMPAÑA</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                        @if(_u.TipoSolitud == "2" || _u.TipoSolitud == "3") {
+                            <MudItem xs="12" lg="2">
+                                <MudDatePicker T="DateTime?" @bind-Date="_u.FechaInicio" Label="Fecha de inicio" Margin="Margin.Dense" Editable="true"
+                                               @bind-Date:after="RecalcularDias" DateFormat="dd/MM/yyyy" Mask="@(new DateMask("dd/MM/yyyy"))" />
+                            </MudItem>
+                            <MudItem xs="12" lg="2">
+                                <MudDatePicker T="DateTime?" @bind-Date="_u.FechaFin" Label="Fecha final" Margin="Margin.Dense" Editable="true"
+                                               @bind-Date:after="RecalcularDias" DateFormat="dd/MM/yyyy" Mask="@(new DateMask("dd/MM/yyyy"))" />
+                            </MudItem>
+                            <MudItem xs="12" lg="2">
+                                <MudTextField @bind-Value="_u.ConteoDias" Label="Conteo de días" Margin="Margin.Dense" ReadOnly="true" />
+                            </MudItem>
+                        }
+                    </MudGrid>
+
+                    <MudDivider Class="my-6" />
+
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <MudText Typo="Typo.h6">Datos del Solicitante</MudText>
+                        <MudIconButton Icon="@Icons.Material.Filled.PersonAdd" Color="Color.Primary" ToolTip="Seleccionar Solicitante"
+                                       OnClick="AbrirDialogoCustom" />
+                    </div>
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12" md="4">
+                            <MudTextField @bind-Value="soliApi.nrodni" Label="Número de Documento" Margin="Margin.Dense" ReadOnly="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudTextField @bind-Value="soliApi.nombre" Label="Nombres y Apellidos" Margin="Margin.Dense" ReadOnly="true" />
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudTextField @bind-Value="soliApi.telefono" Label="Teléfono" Margin="Margin.Dense" ReadOnly="true" />
+                        </MudItem>
+                    </MudGrid>
+
+                    <MudDivider Class="my-6" />
+
+                    <MudText Typo="Typo.h6" Class="mb-4">Detalles del Elemento Publicitario</MudText>
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12" sm="6">
+                            <MudSelect T="string" @bind-Value="_u.idUbicacionFisica" Label="Ubicación Física" Margin="Margin.Dense">
+                                @foreach(var item in lstUbicacionesFisicas) {
+                                    <MudSelectItem Value="@item.Id.ToString()">@item.Nombre</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        @if(_u.idUbicacionFisica == "12") {
+                            <MudItem xs="12" sm="6">
+                                <MudTextField @bind-Value="_a.otroUbicacion" Label="Especificar Otros" Margin="Margin.Dense" />
+                            </MudItem>
+                        }
+
+                        <MudItem xs="12" sm="6">
+                            <MudSelect T="string" @bind-Value="_u.idTipologias" Label="Tipología" Margin="Margin.Dense">
+                                @foreach(var item in lstTipologias) {
+                                    <MudSelectItem Value="@item.Id.ToString()">@item.Nombre</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        @if(_u.idTipologias == "11") {
+                            <MudItem xs="12" sm="6">
+                                <MudTextField @bind-Value="_a.otroElemento" Label="Especificar Otros" Margin="Margin.Dense" />
+                            </MudItem>
+                        }
+
+                        <MudItem xs="12" sm="6">
+                            <MudSelect T="string" @bind-Value="_u.idClasificacionTecnica" Label="Clasificación Técnica" Margin="Margin.Dense">
+                                @foreach(var item in lstClasificacionesTecnicas) {
+                                    <MudSelectItem Value="@item.Id.ToString()">@item.Nombre</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        @if(_u.idClasificacionTecnica == "5") {
+                            <MudItem xs="12" sm="6">
+                                <MudTextField @bind-Value="_u.Direccion" Label="Especificar Otros" Margin="Margin.Dense" />
+                            </MudItem>
+                        }
+
+                        <MudItem xs="12" sm="6">
+                            <MudSelect T="string" @bind-Value="_u.idEstructuraMarco" Label="Estructura o Marco" Margin="Margin.Dense">
+                                @foreach(var item in lstEstructuraMarco) {
+                                    <MudSelectItem Value="@item.Id.ToString()">@item.Nombre</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        @if(_u.idEstructuraMarco == "3") {
+                            <MudItem xs="12" sm="6">
+                                <MudTextField @bind-Value="_u.Direccion" Label="Especificar Otros" Margin="Margin.Dense" />
+                            </MudItem>
+                        }
+                    </MudGrid>
+
+                    <MudText Typo="Typo.subtitle1" Class="mt-6 mb-2">Ubicación Geográfica</MudText>
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="_det.direccion" Label="Dirección" Margin="Margin.Dense" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="_det.zonaUrbana" Label="Zona Urbana" Margin="Margin.Dense" Adornment="Adornment.End"
+                                          AdornmentIcon="@Icons.Material.Filled.Search" AdornmentColor="Color.Secondary" OnAdornmentClick="AbrirDilogHabUrb" />
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudTextField @bind-Value="_det.direcnro" Label="Número" Margin="Margin.Dense" />
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudTextField @bind-Value="_det.direcint" Label="Interior" Margin="Margin.Dense" />
+                        </MudItem>
+                        <MudItem xs="12" md="4">
+                            <MudTextField @bind-Value="_det.zonificacion" Label="Zonificación" Margin="Margin.Dense" />
+                        </MudItem>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="_det.coordLngLat" Label="Coordenadas (Lat, Lng)" Margin="Margin.Dense" Adornment="Adornment.End"
+                                          AdornmentIcon="@Icons.Material.Filled.Map" AdornmentColor="Color.Secondary" OnAdornmentClick="AbrirDialogUbiMarker" />
+                        </MudItem>
+                    </MudGrid>
+
+                    <MudText Typo="Typo.subtitle1" Class="mt-6 mb-2">Dimensiones y Horario</MudText>
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12" sm="6">
+                            <MudNumericField T="double?" @bind-Value="_u.BaseM" @bind-Value:after="RecalcularArea"
+                                             Label="Base (metros)" Margin="Margin.Dense" Immediate="true" Adornment="Adornment.End" AdornmentText="m" Min="0" Step="0.01" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudNumericField T="double?" @bind-Value="_u.AlturaM" @bind-Value:after="RecalcularArea"
+                                             Label="Altura (metros)" Margin="Margin.Dense" Immediate="true" Adornment="Adornment.End" AdornmentText="m" Min="0" Step="0.01" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="_det.area" Label="Área (m²)" Margin="Margin.Dense" ReadOnly="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudNumericField T="string" @bind-Value="_det.nrocaras" Label="Número de Caras" Margin="Margin.Dense" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <MudSelect T="string" @bind-Value="_u.idMaterialPredominante" Label="Material Predominante" Margin="Margin.Dense">
+                                @foreach(var item in lstMaterialPredominante) {
+                                    <MudSelectItem Value="@item.Id.ToString()">@item.Nombre</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        @if(_u.idMaterialPredominante == "7") {
+                            <MudItem xs="12" sm="6">
+                                <MudTextField @bind-Value="_u.Direccion" Label="Especificar Otros" Margin="Margin.Dense" />
+                            </MudItem>
+                        }
+                    </MudGrid>
+
+                    <MudGrid Spacing="2" Class="mt-4">
+
+
+                        <MudItem xs="12" md="12">
+                            <MudText Typo="Typo.subtitle2" GutterBottom="true">Licencia de Funcionamiento (opcional)</MudText>
+                            <MudSwitch @bind-Value="_u.UsarRefLicencia" Color="Color.Primary" Label="Referencia Licencia" />
+                            <MudCollapse Expanded="_u.UsarRefLicencia">
+                                <MudGrid Spacing="2">
+                                    <MudItem xs="12" md="4">
+                                        <MudTextField @bind-Value="_det.nroLicencia" Label="N° de Licencia" Margin="Margin.Dense" />
+                                    </MudItem>
+                                    <MudItem xs="12" md="3">
+                                        <MudTextField @bind-Value="_det.anio" Label="Año" Margin="Margin.Dense" />
+                                    </MudItem>
+                                    <MudItem xs="12" md="5">
+                                        <MudTextField @bind-Value="_det.razsocial" Label="Razón Social" Margin="Margin.Dense" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search"
+                                                      AdornmentColor="Color.Secondary" OnAdornmentClick="AbrirDialogLic" />
+                                    </MudItem>
+                                    <MudItem xs="12" md="6">
+                                        <MudTextField @bind-Value="_det.distrito" Label="Distrito" Margin="Margin.Dense" ReadOnly="true" />
+                                    </MudItem>
+                                </MudGrid>
+                            </MudCollapse>
+                        </MudItem>
+                    </MudGrid>
+                </MudTabPanel>
+
+                @if(_u.idClasificacionTecnica is "2" or "3" or "4") {
+                    <MudTabPanel Text="HORARIO">
+                        <MudGrid Spacing="2">
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.h6" Class="my-4">Horario de Funcionamiento</MudText>
+                            </MudItem>
+                        </MudGrid>
+                        <MudPaper Class="p-4" Elevation="1">
+                            <MudTable Items="horarios" T="HorarioItem" Dense="true" Style="min-width: 400px;">
+                                <HeaderContent>
+                                    <MudTh>Frecuencia</MudTh>
+                                    <MudTh>Desde</MudTh>
+                                    <MudTh>Hasta</MudTh>
+                                    <MudTh Style="width: 100px; text-align: center;">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Add" Color="Color.Success" OnClick="AgregarHorario" />
+                                    </MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd>
+                                        <MudTextField @bind-Value="context.Frecuencia" Placeholder="Ej: Lunes a Viernes" Dense="true" />
+                                    </MudTd>
+                                    <MudTd>
+                                        <MudTextField @bind-Value="context.Desde" InputType="InputType.Time" Dense="true" />
+                                    </MudTd>
+                                    <MudTd>
+                                        <MudTextField @bind-Value="context.Hasta" InputType="InputType.Time" Dense="true" />
+                                    </MudTd>
+                                    <MudTd Class="text-center">
+                                        <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" OnClick="@(() => EliminarHorario(context))" />
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </MudPaper>
+                    </MudTabPanel>
+                }
+
+               
+                @*
+                <MudTabPanel Text="REQUISITOS">
+                    <MudText Typo="Typo.h6" Class="my-4">Requisitos del Expediente</MudText>
+                    <div class="checklist-container">
+                        @if(_u.idUbicacionFisica == "7") {
+                            <MudText Typo="Typo.subtitle1" Class="my-2 text-primary">Vías Locales</MudText>
+                            <!-- Bloque: VIAS LOCALES -->
+                            <MudGrid Spacing="1">
+                                <MudItem xs="12">
+                                    <MudCheckBox @bind-Checked="ck1" T="bool" Style="font-size:11px;" Label="El Formato de Solicitud - Declaración Jurada, llenado y firmado por el solicitante." />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudCheckBox @bind-Checked="ck2" T="bool" Label="Plano de Ubicación a escala de 1/500 o 1/250, de acuerdo con lo establecido en el Reglamento Nacional de Eficaciones, incluyendo coordenadas UTM WGS84" />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudCheckBox @bind-Checked="ck3" T="bool" Label="Las dimensiones del área de exhibición del elemento de publicidad exterior" />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudCheckBox @bind-Checked="ck4" T="bool" Label="Las fotografías actuales y fotomontajes donde se pretende instalar el elemento de publicidad exterior, donde se aprecie su entorno urbano, sin incluir la leyenda o el    contenido de la publicidad." />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudCheckBox @bind-Checked="ck5" T="bool" Label="La declaración jurada de no afectación de áreas verdes arbolado, conforme al Anexo N° 5, respecto a la ubicación del elemento de publicidad exterior en bien de dominio público, suscrito por el solicitante." />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudCheckBox @bind-Checked="ck6" T="bool" Label="Copia simple de seguro de responsabilidad civil vigente." />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudCheckBox @bind-Checked="ck7" T="bool" Label="Pago por derecho de trámite." />
+                                </MudItem>
+                            </MudGrid>
+
+                            @if(new[] { "2", "3", "6", "7" }.Contains(_u.idTipologias)) {
+                                <MudDivider Class="my-3" />
+
+                                <MudGrid Spacing="1">
+                                    <MudItem xs="12">
+                                        <MudCheckBox @bind-Checked="ck8" T="bool" Label="Memoria descriptiva de estructuras, firmada por Ingeniero Civil." />
+                                    </MudItem>
+                                    <MudItem xs="12">
+                                        <MudCheckBox @bind-Checked="ck9" T="bool" Label="Plano de estructuras a escala 1/75 o 1/110, firmado por Ingeniero Civil." />
+                                    </MudItem>
+                                </MudGrid>
+                            }
+
+                            @if(new[] { "2", "3", "4" }.Contains(_u.idTipologias)) {
+                                <MudDivider Class="my-3" />
+
+                                <MudGrid Spacing="1">
+                                    <MudItem xs="12">
+                                        <MudCheckBox @bind-Checked="ck10" T="bool" Label="Copia simple de carta de factibilidad de servicio eléctrico." />
+                                    </MudItem>
+                                    <MudItem xs="12">
+                                        <MudCheckBox @bind-Checked="ck11" T="bool" Label="Declaración Jurada del Ingeniero Electricista o Mecánico Electricista." />
+                                    </MudItem>
+                                    <MudItem xs="12">
+                                        <MudCheckBox @bind-Checked="ck12" T="bool" Label="Memoria descriptiva de especificaciones técnicas." />
+                                    </MudItem>
+                                    <MudItem xs="12">
+                                        <MudCheckBox @bind-Checked="ck13" T="bool" Label="Plano de instalaciones eléctricas, firmado por Ingeniero Electricista." />
+                                    </MudItem>
+                                </MudGrid>
+                            }
+                        }
+                        else {
+                            <MudText Typo="Typo.subtitle1" Class="my-2 text-primary">Dominio Privado</MudText>
+                            <!-- Bloque: VIENES DE DOMINIO PRIVADO -->
+                            <MudGrid Spacing="1">
+                                <MudItem xs="12">
+                                    <MudCheckBox @bind-Checked="ck14" T="bool" Class="dense-checkbox" Style="font-size:11px"
+                                                 Label="El Formato de Solicitud - Declaración Jurada, llenado y firmado por el solicitante." />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudCheckBox @bind-Checked="ck15" T="bool" Class="dense-checkbox" Style="font-size:11px"
+                                                 Label="Las dimensiones del área de exhibición del elemento de publicidad exterior." />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudCheckBox @bind-Checked="ck16" T="bool" Class="dense-checkbox" Style="font-size:11px"
+                                                 Label="Las fotografías actuales y fotomontajes donde se pretende instalar el elemento de publicidad exterior, donde se aprecie su entorno urbano, sin incluir la leyenda o el contenido de la publicidad." />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudCheckBox @bind-Checked="ck17" T="bool" Class="dense-checkbox" Style="font-size:11px"
+                                                 Label="Si el EPE se ubica sobre aires de propiedad de terceros, contar con la autorización del(os) propietario(s) de la edificación colindante." />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudCheckBox @bind-Checked="ck18" T="bool" Class="dense-checkbox" Style="font-size:11px"
+                                                 Label="Si el EPE se ubica en bien de propiedad común, presentar la autorización por mayoría calificada de la junta de propietarios o del presidente de la junta." />
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudCheckBox @bind-Checked="ck19" T="bool" Class="dense-checkbox" Style="font-size:11px"
+                                                 Label="Pago por derecho de trámite." />
+                                </MudItem>
+
+                                <!-- Bloque: Documentos de estructura (tipologías 2,3,6,7) -->
+                                @if(new[] { "2", "3", "6", "7" }.Contains(_u.idTipologias)) {
+                                    <MudDivider Class="my-3 divider-soft" />
+                                    <MudItem xs="12">
+                                        <MudCheckBox @bind-Checked="ck20" T="bool" Class="dense-checkbox"
+                                                     Label="Plano de ubicación a escala 1/500 o 1/250 (RNE), con coordenadas UTM WGS84 del elemento y distancia de la arista más saliente al borde exterior de la pista, suscrito por arquitecto colegiado." />
+                                    </MudItem>
+                                    <MudItem xs="12">
+                                        <MudCheckBox @bind-Checked="ck21" T="bool" Class="dense-checkbox"
+                                                     Label="Para EPE en azoteas y fachadas: plano de elevación de fachada donde se aprecie la proporción entre fachada y elemento publicitario, suscrito por arquitecto colegiado." />
+                                    </MudItem>
+                                    <MudItem xs="12">
+                                        <MudCheckBox @bind-Checked="ck22" T="bool" Class="dense-checkbox"
+                                                     Label="Memoria descriptiva de estructuras, suscrita por Ingeniero Civil." />
+                                    </MudItem>
+                                    <MudItem xs="12">
+                                        <MudCheckBox @bind-Checked="ck23" T="bool" Class="dense-checkbox"
+                                                     Label="Plano de estructuras a escala 1/75 o 1/100." />
+                                    </MudItem>
+                                }
+
+                                <!-- Bloque: Instalaciones eléctricas (tipologías 2,3,4) -->
+                                @if(new[] { "2", "3", "4" }.Contains(_u.idTipologias)) {
+                                    <MudDivider Class="my-3 divider-soft" />
+
+                                    <MudItem xs="12">
+                                        <MudCheckBox @bind-Checked="ck24" T="bool" Class="dense-checkbox"
+                                                     Label="Memoria descriptiva con especificaciones técnicas, suscrita por Ing. Electricista o Mecánico Electricista." />
+                                    </MudItem>
+                                    <MudItem xs="12">
+                                        <MudCheckBox @bind-Checked="ck25" T="bool" Class="dense-checkbox"
+                                                     Label="Plano de instalaciones eléctricas a escala 1/75 o 1/100, suscrito por Ing. Electricista o Mecánico Electricista." />
+                                    </MudItem>
+                                    <MudItem xs="12">
+                                        <MudCheckBox @bind-Checked="ck26" T="bool" Class="dense-checkbox"
+                                                     Label="Solicitud/carta de factibilidad de servicio eléctrico a la empresa prestadora del servicio." />
+                                    </MudItem>
+                                }
+
+                                <!-- Bloque: Temporalidad / colindantes (tipologías 1,9) -->
+                                @if(new[] { "1", "9" }.Contains(_u.idTipologias)) {
+                                    <MudDivider Class="my-3 divider-soft" />
+
+                                    <MudItem xs="12">
+                                        <MudCheckBox @bind-Checked="ck27" T="bool" Class="dense-checkbox"
+                                                     Label="Documento simple del solicitante indicando el tiempo de exhibición (máximo 6 meses)." />
+                                    </MudItem>
+                                    <MudItem xs="12">
+                                        <MudCheckBox @bind-Checked="ck28" T="bool" Class="dense-checkbox"
+                                                     Label="Para elementos en exteriores (laterales) de bienes de dominio privado: autorización expresa del propietario colindante del inmueble." />
+                                    </MudItem>
+                                }
+                            </MudGrid>
+                        }
+                    </div>
+                </MudTabPanel>
+                *@
+                <MudTabPanel Text="REQUISITOS">
+                    @if(cargando) {
+                        <div class="d-flex justify-center my-5">
+                            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                            <MudText Class="ml-3" Typo="Typo.subtitle1">Cargando requisitos...</MudText>
+                        </div>
+                    }
+                    else if(lstRequisitos == null || lstRequisitos.Count == 0) {
+                        <MudText Color="Color.Error" Typo="Typo.subtitle2">
+                            No se encontraron requisitos para los parámetros indicados.
+                        </MudText>
+                    }
+                    else {
+                        <MudPaper Class="p-4" Elevation="0">
+                            <MudText Typo="Typo.h6" GutterBottom="true">Listado de Requisitos</MudText>
+
+                            <MudGrid Spacing="1">
+                                @foreach(var req in lstRequisitos) {
+                                    <MudItem xs="12">
+                                        <MudCheckBox @bind-Value="@req.Estado"
+                                                     Label="@req.Nombre"
+                                                     Color="Color.Primary"
+                                                     Dense="true" />
+                                    </MudItem>
+                                }
+                            </MudGrid>
+                        </MudPaper>
+                    }
+                </MudTabPanel>
+
+            </MudTabs>
+            <div class="d-flex align-center justify-space-between">
+                <MudButton Variant="Variant.Filled" Color="Color.Success" Class="ml-auto" onclick="Submit">GUARDAR</MudButton>
+            </div>
+        </MudForm>
+    </MudPaper>
+</MudContainer>

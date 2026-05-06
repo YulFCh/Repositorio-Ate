@@ -1,0 +1,184 @@
+﻿@using SistemaLicencias.SHARED.DTOs
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject IGirosService GiroService
+
+<MudDialog MaxWidth="MaxWidth.Small" FullWidth="true">
+    <DialogContent>
+        <MudPaper Class="p-5 " Elevation="0" Style="background-color: #fafafa">
+            <MudStack Spacing="3">
+                <MudText Typo="Typo.h6" Class="text-primary">
+                    ✏️ Modificar Giro @(giroFlex.TipoRegistro == 1 ? "Detalle" : giroFlex.TipoRegistro == 2 ? "Complementario" : "Principal")
+                </MudText>
+
+                <MudDivider />
+                <MudForm @ref="_form">
+                    <MudGrid Spacing="3">
+                        @if(giroFlex.TipoRegistro == 1) {
+                            <!-- Giro Detalle-->
+                            <MudItem xs="12">
+                                <MudSelect T="int?" Label="Giro Complementario" Dense="true" FullWidth="true"
+                                           @bind-Value="selectedComplementarioId">
+
+                                    <MudSelectItem Value="@( (int?)null )" Disabled="true">Seleccione:</MudSelectItem>
+
+                                    @foreach(var item in girosComplementarios) {
+                                        <MudSelectItem Value="@( (int?)item.IdGiroComplementario )">@item.Nombre</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                        }
+                        else if(giroFlex.TipoRegistro == 2) {
+                            <!-- Giro Complementario -->
+                            <MudItem xs="12">
+                                <MudSelect T="int?" Label="Giro Principal"
+                                           FullWidth="true"
+                                           @bind-Value="selectedPrincipalId"                                          
+                                           Required="true"
+                                           Dense="true">
+                                    <MudSelectItem Value="@( (int?)null )" Disabled="true">Seleccione:</MudSelectItem>
+                                    @foreach(var item in girosPrincipales) {
+                                        <MudSelectItem Value="@( (int?)item.IdGiroPrincipal )">@item.Nombre</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                        }
+
+                        <!-- En todos los tipos -->
+                        <MudItem xs="12">
+                            <MudTextField Label="Nombre del Giro" Dense="true" @bind-Value="giroFlex.Nombre" Required />
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudRadioGroup T="int" @bind-Value="giroFlex.Estado" Row="true" Label="Estado" Required>
+                                <MudRadio Value="1">Activo</MudRadio>
+                                <MudRadio Value="0">Inactivo</MudRadio>
+                            </MudRadioGroup>
+                        </MudItem>
+                    </MudGrid>
+                </MudForm>
+                <MudDivider />
+
+                <MudStack Direction="Row" Spacing="2">
+                    <MudButton Variant="Variant.Filled" Color="Color.Success"
+                               OnClick="Actualizar"
+                               Disabled="@isSaving"
+                               StartIcon="@Icons.Material.Filled.Save"
+                               Style="min-width: 150px;">
+                        @if(isSaving) {
+                            <MudProgressCircular Size="Size.Small" Color="Color.Inherit" Indeterminate="true" Class="me-2" />
+                            @("Guardando...")
+                        }
+                        else {
+                            @("Guardar")
+                        }
+                    </MudButton>
+
+                    <MudButton Variant="Variant.Text" Color="Color.Secondary" OnClick="Cancelar"
+                               StartIcon="@Icons.Material.Filled.Cancel"
+                               Style="min-width: 150px;">Cancelar</MudButton>
+                </MudStack>
+            </MudStack>
+        </MudPaper>
+    </DialogContent>
+</MudDialog>
+
+
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = default!;
+    [Parameter] public GiroFlexible giroFlex { get; set; } = new();
+
+
+    private string _baseUrl = "http://192.168.0.139:148";
+    //private string _baseUrl = "http://localhost:5297";
+
+    private List<GiroPrincipal> girosPrincipales = new();
+    private List<GiroComplementario> girosComplementarios = new();
+    private List<GiroDetalle> girosDetalle = new();
+
+    // Ids seleccionados - giros
+    private int? selectedPrincipalId = null;
+    private int? selectedComplementarioId = null;
+    
+
+
+    private int TipoSeleccion = 0;
+
+    private MudForm _form = default!;
+    private bool isSaving = false;
+
+
+    protected override async Task OnInitializedAsync() {
+        if(giroFlex.TipoRegistro == 1 && giroFlex.IdGiroComplementario.HasValue) {
+
+            Console.WriteLine($"idgirocomplemeentario-{giroFlex.IdGiroComplementario}");
+            await LoadComboComplementarios();
+        }
+        else if(giroFlex.TipoRegistro == 2) {
+
+            await LoadComboPrincipal();
+        }
+        else if(giroFlex.TipoRegistro == 3) {
+            selectedPrincipalId = giroFlex.IdGiroPrincipal;
+        }
+    }
+
+    private async Task Actualizar() {
+        await _form.Validate();
+
+        if(!_form.IsValid) {
+            await MostrarError("Por favor complete los campos obligatorios.");
+            return;
+        }
+
+        isSaving = true;
+
+        giroFlex.IdGiroComplementario = selectedComplementarioId;
+        giroFlex.IdGiroPrincipal = selectedPrincipalId;
+
+    
+
+        var (success, message) = await GiroService.UpadateGiroAsync(giroFlex);
+
+        isSaving = false;
+
+        if(success) {
+            await DialogService.ShowMessageBox("✅ Éxito", message);
+            MudDialog.Close(DialogResult.Ok(true));
+        }
+        else {
+            await DialogService.ShowMessageBox("❌ Error", message);
+        }
+    }
+
+
+    private async Task LoadComboPrincipal() {
+        girosPrincipales = await GiroService.ObtenerGirosPorTipoAsync<GiroPrincipal>(1);
+        var actual = girosPrincipales.FirstOrDefault(x => x.IdGiroPrincipal == giroFlex.IdGiroPrincipal);
+        if(actual is not null) {
+            selectedPrincipalId = giroFlex.IdGiroPrincipal;
+            selectedComplementarioId = giroFlex.IdGiroComplementario;
+        }
+    }
+
+    private async Task LoadComboComplementarios() {
+        girosComplementarios = await GiroService.ObtenerGirosPorTipoAsync<GiroComplementario>(2);
+        var actual = girosComplementarios.FirstOrDefault(x => x.IdGiroComplementario == giroFlex.IdGiroComplementario);
+        if(actual is not null) {
+            selectedComplementarioId = giroFlex.IdGiroComplementario;
+        }
+    }
+
+
+
+
+    private async Task MostrarError(string mensaje) {
+        var parameters = new DialogParameters { ["ContentText"] = mensaje };
+        await DialogService.ShowMessageBox("Error", mensaje, "Ok");
+    }
+
+    private void Cancelar() {
+        MudDialog.Cancel();
+    }
+}

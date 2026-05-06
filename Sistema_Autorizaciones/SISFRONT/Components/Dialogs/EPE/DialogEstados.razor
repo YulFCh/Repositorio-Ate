@@ -1,0 +1,87 @@
+﻿@inject HttpClient Http
+@using SistemaLicencias.SHARED.DTOs
+@using System.Text.Json.Serialization
+
+
+<MudDialog>
+    <DialogContent>
+
+
+        <MudSelect T="string" @bind-Value="valorId" Label="Estado Tramite" Variant="Variant.Outlined" Margin="Margin.Dense">
+            <MudSelectItem Value="@("0")" Disabled="true">Seleccionar:</MudSelectItem>
+            @foreach(var state in cbo) {
+
+                <MudSelectItem Value="@(state.Id.ToString())">@state.Nombre</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudTextField T="string" @bind-Value="txtEscritura" Label="Observacion" Variant="Variant.Outlined" Lines="3" />
+
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Cerrar" Color="Color.Secondary">Cancelar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+
+
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public EventCallback<string> OnSeleccionarGiro { get; set; }
+
+    //private string _baseUrl = "http://192.168.0.139:148";
+    private string _baseUrl = "http://localhost:5297";
+
+    private string _selectedState;
+    private string valorId = "0";
+    private string txtEscritura;
+    private List<ComboDTO> cbo = new List<ComboDTO>();
+
+
+
+
+    protected override async Task OnInitializedAsync() {
+        try {
+            var rs = await Http.GetFromJsonAsync<rsEstTram>($"{_baseUrl}/api/Consultas/getesttram");
+
+            if(rs?.response != null) {
+                cbo = rs.response;
+
+            }
+            else {
+                Console.WriteLine("Lista Vacia - HabUrb");
+            }
+        }
+        catch(Exception ex) {
+            Console.WriteLine($"Error al consultar solicitantes: {ex.Message}");
+        }
+    }
+
+
+
+    private void SelecLugar() {
+
+        MudDialog.Close(DialogResult.Ok(""));
+    }
+
+    private void UptEstadosTramite(){
+        
+    }
+
+
+
+    private void Cerrar() {
+        MudDialog.Cancel();
+    }
+
+    private class rsEstTram {
+        public string mensaje { get; set; }
+        public List<ComboDTO> response { get; set; }
+    }
+
+
+
+
+}

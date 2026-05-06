@@ -1,0 +1,261 @@
+﻿@page "/form-solicitantes"
+@using MudBlazor
+@inject HttpClient Http
+@inject IDialogService DialogService
+@inject NavigationManager Navigation
+@inject ProtectedSessionStorage SessionStorage
+@inject IHttpContextAccessor HttpContextAccessor
+@using SistemaLicencias.SHARED.DTOs
+@inject SessionService servicess
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4">
+    <MudPaper Elevation="3" Class="pa-6">
+        <!-- Header Section -->
+        <div class="d-flex justify-space-between align-center mb-6">
+            <MudText Typo="Typo.h5" Color="Color.Primary">
+                <MudIcon Icon="@Icons.Material.Filled.Group" Class="mr-2" />
+                Solicitantes Registrados
+            </MudText>
+            <MudTextField @bind-Value="searchText"
+                          Placeholder="Buscar por DNI, nombre o código"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          Immediate="true"
+                          Variant="Variant.Outlined"
+                          Margin="Margin.Dense"
+                          Style="max-width: 400px;" />
+        </div>
+
+        <!-- Table Section -->
+        <MudTable Items="filteredData"
+                  Dense="false"
+                  Hover="true"
+                  Bordered="true"
+                  Striped="true"
+                  Elevation="0"
+                  Class="mb-4"
+                  RowStyleFunc="@RowStyleFunc">
+            <HeaderContent>
+                <MudTh Style="text-align: center; font-weight: 600;">N°</MudTh>
+                <MudTh Style="font-weight: 600;">Solicitante</MudTh>
+                <MudTh Style="text-align: center; font-weight: 600;">DNI / RUC</MudTh>
+                <MudTh Style="font-weight: 600;">Correo</MudTh>
+                <MudTh Style="text-align: center; font-weight: 600;">Teléfono</MudTh>
+                <MudTh Style="text-align: center; font-weight: 600;">Estado</MudTh>
+                <MudTh Style="text-align: center; font-weight: 600;">Opciones</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="N°" Style="text-align: center;">
+                    <MudChip T="string" Size="Size.Small" Color="Color.Primary">@context.idSolicitante</MudChip>
+                </MudTd>
+                <MudTd DataLabel="Solicitante">
+                    <MudText Typo="Typo.body2" Style="font-weight: 500;">@context.nombre</MudText>
+                </MudTd>
+                <MudTd DataLabel="DNI/RUC" Style="text-align: center;">
+                    <MudText Typo="Typo.body2">@GetDocumento(context)</MudText>
+                </MudTd>
+                <MudTd DataLabel="Correo">
+                    <MudText Typo="Typo.body2">@(string.IsNullOrEmpty(context.correo) ? "Sin correo" : context.correo)</MudText>
+                </MudTd>
+                <MudTd DataLabel="Teléfono" Style="text-align: center;">
+                    <MudText Typo="Typo.body2">@context.telefono</MudText>
+                </MudTd>
+                <MudTd DataLabel="Estado" Style="text-align: center;">
+                    @if(!string.IsNullOrEmpty(context.aprobado) && context.aprobado.ToLower() == "aprobado") {
+                        <MudChip T="string"
+                                 Size="Size.Small"
+                                 Color="Color.Success"
+                                 Icon="@Icons.Material.Filled.CheckCircle">
+                            Aprobado
+                        </MudChip>
+                    }
+                    else if(!string.IsNullOrEmpty(context.aprobado) && context.aprobado.ToLower() == "desaprobado") {
+                        <MudChip T="string"
+                                 Size="Size.Small"
+                                 Color="Color.Error"
+                                 Icon="@Icons.Material.Filled.Cancel">
+                            Desaprobado
+                        </MudChip>
+                    }
+                    else {
+                        <MudChip T="string"
+                                 Size="Size.Small"
+                                 Color="Color.Warning"
+                                 Icon="@Icons.Material.Filled.HourglassEmpty">
+                            Pendiente
+                        </MudChip>
+                    }
+                </MudTd>
+                <MudTd DataLabel="Opciones" Style="text-align: center;">
+                    @if(string.IsNullOrEmpty(context.aprobado) ||
+                                        context.aprobado.ToLower() != "aprobado") {
+                        <MudTooltip Text="Aprobar">
+                            <MudIconButton Icon="@Icons.Material.Filled.Check"
+                                           Color="Color.Success"
+                                           Size="Size.Small"
+                                           Variant="Variant.Filled"
+                                           OnClick="@(() => Aprobar(context))" />
+                        </MudTooltip>
+                    }
+                    @if(string.IsNullOrEmpty(context.aprobado) ||
+                                        context.aprobado.ToLower() == "aprobado") {
+                        <MudTooltip Text="Desaprobar">
+                            <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                           Color="Color.Error"
+                                           Size="Size.Small"
+                                           Variant="Variant.Filled"
+                                           OnClick="@(() => Desaprobar(context))" />
+                        </MudTooltip>
+                    }
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new int[] { 10, 25, 50 }"
+                               InfoFormat="{first_item}-{last_item} de {all_items}"
+                               RowsPerPageString="Filas por página:" />
+            </PagerContent>
+        </MudTable>
+
+        <!-- Footer Info -->
+        <MudText Typo="Typo.caption" Align="Align.Left" Color="Color.Secondary">
+            Mostrando @filteredData.Count() de @data.Count solicitantes
+        </MudText>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private string searchText = "";
+    private List<SolicitanteDto> data = new();
+    private string _baseUrl = "http://192.168.0.139:148";
+
+    private IEnumerable<SolicitanteDto> filteredData =>
+        string.IsNullOrWhiteSpace(searchText)
+            ? data
+            : data.Where(x =>
+                (x.nombre?.Contains(searchText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (x.nrodni?.Contains(searchText) ?? false) ||
+                (x.nroruc?.Contains(searchText) ?? false));
+
+    // Método helper para mostrar DNI o RUC
+    private string GetDocumento(SolicitanteDto s) {
+        if(!string.IsNullOrEmpty(s.nrodni))
+            return s.nrodni;
+        if(!string.IsNullOrEmpty(s.nroruc))
+            return s.nroruc;
+        return "Sin documento";
+    }
+
+    // Función para aplicar estilos a las filas según el estado de aprobación
+    private string RowStyleFunc(SolicitanteDto solicitante, int index) {
+        if(!string.IsNullOrEmpty(solicitante.aprobado)) {
+            if(solicitante.aprobado.ToLower() == "desaprobado") {
+                return "background-color: #ffebee;"; // Rojo claro para desaprobados
+            }
+            else if(solicitante.aprobado.ToLower() == "aprobado") {
+                return "background-color: #e8f5e9;"; // Verde claro para aprobados
+            }
+        }
+        return string.Empty;
+    }
+
+    async Task Aprobar(SolicitanteDto s) {
+        bool? result = await DialogService.ShowMessageBox(
+            "Confirmar Aprobación",
+            $"¿Está seguro de aprobar a {s.nombre}?",
+            yesText: "Aprobar", cancelText: "Cancelar");
+
+        if(result ?? false) {
+            try {
+                var estadoAnterior = s.aprobado;
+                s.aprobado = "aprobado";
+                StateHasChanged();
+
+                var response = await Http.PutAsync(
+                    $"{_baseUrl}/api/Solicitante/aprobar/{s.idSolicitante}",
+                    null);
+
+                if(response.IsSuccessStatusCode) {
+                    await DialogService.ShowMessageBox("Éxito", "Solicitante aprobado correctamente");
+                }
+                else {
+                    s.aprobado = estadoAnterior;
+                    StateHasChanged();
+                    await DialogService.ShowMessageBox("Error", "No se pudo aprobar el solicitante");
+                }
+            }
+            catch(Exception ex) {
+                s.aprobado = null;
+                StateHasChanged();
+                await DialogService.ShowMessageBox("Error", $"Ocurrió un error: {ex.Message}");
+            }
+        }
+    }
+
+    async Task Desaprobar(SolicitanteDto s) {
+        bool? result = await DialogService.ShowMessageBox(
+            "Confirmar Desaprobación",
+            $"¿Está seguro de desaprobar a {s.nombre}?",
+            yesText: "Desaprobar", cancelText: "Cancelar");
+
+        if(result ?? false) {
+            try {
+                var estadoAnterior = s.aprobado;
+                s.aprobado = "desaprobado";
+                StateHasChanged();
+
+                var response = await Http.PutAsync(
+                    $"{_baseUrl}/api/Solicitante/desaprobar/{s.idSolicitante}",
+                    null);
+
+                if(response.IsSuccessStatusCode) {
+                    await DialogService.ShowMessageBox("Éxito", "Solicitante desaprobado correctamente");
+                }
+                else {
+                    s.aprobado = estadoAnterior;
+                    StateHasChanged();
+                    await DialogService.ShowMessageBox("Error", "No se pudo desaprobar el solicitante");
+                }
+            }
+            catch(Exception ex) {
+                s.aprobado = null;
+                StateHasChanged();
+                await DialogService.ShowMessageBox("Error", $"Ocurrió un error: {ex.Message}");
+            }
+        }
+    }
+
+    protected override async Task OnInitializedAsync() {
+        try {
+            var apiResponse = await Http.GetFromJsonAsync<ApiResponse>(
+                $"{_baseUrl}/api/Solicitante/getall");
+
+            if(apiResponse != null && apiResponse.response != null) {
+                data = apiResponse.response;
+            }
+            else {
+                data = new();
+            }
+        }
+        catch(Exception ex) {
+            await DialogService.ShowMessageBox("Error", $"No se pudieron cargar los datos: {ex.Message}");
+            data = new();
+        }
+    }
+
+    // Clase wrapper para la respuesta de la API
+    public class ApiResponse {
+        public string mensaje { get; set; }
+        public List<SolicitanteDto> response { get; set; }
+    }
+
+    // DTO con SOLO los campos que necesitas
+    public class SolicitanteDto {
+        public int idSolicitante { get; set; }
+        public string nombre { get; set; }
+        public string nrodni { get; set; }
+        public string nroruc { get; set; }
+        public string correo { get; set; }
+        public string telefono { get; set; }
+        public string aprobado { get; set; }
+    }
+}

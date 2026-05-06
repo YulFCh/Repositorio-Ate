@@ -1,0 +1,21 @@
+﻿@using MudBlazor
+
+<MudDialog >
+    <DialogContent  >
+        <iframe src="@PdfUrl"
+                width="100%"
+                height="100%"
+                style="border: none; display: block;" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Close" Color="Color.Secondary">Cerrar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public string PdfUrl { get; set; }
+
+    void Close() => MudDialog?.Close();
+}

@@ -1,0 +1,203 @@
+﻿@inject HttpClient Http
+@inject IJSRuntime JS
+@using SistemaLicencias.SHARED.DTOs
+@using MudBlazor
+@inject GoogleMapsInterop MapsInterop
+
+<MudDialog >
+    <DialogContent>
+      
+        <MudGrid>
+            @if(zonas?.Any() == true) {
+                <MudItem xs="12" md="4">
+                    <MudSelect T="int" Label="Selecciona una zona" @bind-Value="_zonaSeleccionada" Placeholder="Seleccione:" Dense="true" Class="mb-3">
+                        <MudSelectItem Value="0" Disabled="true">Seleccione:</MudSelectItem>
+                        @foreach(var zona in zonas) {
+                            <MudSelectItem Value="@zona.IdZona">@zona.Nombre</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudSelect T="int" Label="Selecciona un año" @bind-Value="_anioSeleccionado" Placeholder="Seleccione:" Dense="true" Class="mb-3">
+                        <MudSelectItem Value="0" Disabled="true">Seleccione:</MudSelectItem>
+                        @foreach(var anio in ObtenerAnios()) {
+                            <MudSelectItem Value="@anio">@anio</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" md="4" Class="d-flex align-items-end">
+                    <MudButton Color="Color.Primary" OnClick="BuscarSubzonas" Variant="Variant.Filled">
+                        Buscar
+                    </MudButton>
+                </MudItem>
+            }
+            else {
+                <MudItem xs="12">
+                    <MudText Typo="Typo.body2">Cargando zonas disponibles...</MudText>
+                    <MudProgressCircular Color="Color.Primary" />
+                </MudItem>
+            }
+        </MudGrid>
+
+
+        <div id="my_map" style="height: 400px; width: 100%; margin-top:20px; border-radius:10px;"></div>
+
+        <MudText Typo="Typo.h6" Class="mt-4 mb-2">Subzonas registradas</MudText>
+
+        <MudTextField @bind-Value="_filtroNombre" Label="Buscar por nombre" Variant="Variant.Outlined" Dense="true" Class="mb-3" />
+
+        <MudTable Items="filteredSubzonas"
+                  RowsPerPage="6"
+                  Dense="true"
+                  Bordered="true"
+                  Hover="true"
+                  Striped="true"
+                  Elevation="0"
+                  Breakpoint="Breakpoint.Sm"
+                  RowClassFunc="@( (s, i) => s.Ocupados >= s.CapacidadTotal ? "subzona-llena" : s.Ocupados == 3 ? "subzona-ambar" : null )">
+
+
+            <HeaderContent>
+                <MudTh>Subzona</MudTh>
+                <MudTh>Capacidad</MudTh>                
+                <MudTh>Disponibles</MudTh>
+                <MudTh></MudTh>
+            </HeaderContent>
+
+            <RowTemplate>
+                <MudTd >@context.Nombre</MudTd>
+                <MudTd>@context.CapacidadTotal</MudTd>
+                <MudTd>@context.Ocupados / @context.CapacidadTotal</MudTd>
+                <MudTd>
+                    <MudButton Variant="Variant.Outlined"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               Disabled="@((context.Ocupados >= context.CapacidadTotal))"
+                               OnClick="() => AgregarSubzona(context)">
+                        Agregar
+                    </MudButton>
+                </MudTd>
+            </RowTemplate>
+
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+
+
+
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Cerrar" Color="Color.Secondary">Cerrar</MudButton>
+    </DialogActions>
+</MudDialog>
+<style>
+    .subzona-llena {
+        background-color: #ff7070 !important; /* rojo claro */
+    }
+
+    .subzona-ambar {
+        background-color: #fff3cd !important; /* amarillo claro */
+    }
+
+    .subzona-verde {
+        background-color: #e0f7e9 !important; /* verde claro*/
+    }
+
+
+</style>
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    private string _baseUrl = "http://192.168.0.139:148";
+    //private string _baseUrl = "http://localhost:5297";
+
+    private int _zonaSeleccionada;
+    private bool _buscado = false;
+    private List<ZonasAutApi> zonas = new();
+    private List<SubZonasAutApi> subzonas = new();
+    private string _filtroNombre = string.Empty;
+    private string color = "";
+    private int _anioSeleccionado = DateTime.Now.Year; // Año actual por defecto
+
+
+    private IEnumerable<SubZonasAutApi> filteredSubzonas =>
+        string.IsNullOrWhiteSpace(_filtroNombre)
+            ? subzonas
+            : subzonas.Where(s => s.Nombre.Contains(_filtroNombre, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if(firstRender) {
+            var dotNetRef = DotNetObjectReference.Create(this);
+            await JS.InvokeVoidAsync("googleMaps.initMap", dotNetRef);
+        }
+    }
+    protected override async Task OnInitializedAsync() {
+        var rs = await Http.GetFromJsonAsync<ZonasAutDTO>($"{_baseUrl}/api/Solicitud/getzonam");
+        zonas = rs.response;
+    }
+
+    private async Task BuscarSubzonas() {
+
+        subzonas = new List<SubZonasAutApi>();
+        _filtroNombre = string.Empty; 
+        Console.WriteLine("Solicitando limpieza de marcadores...");
+        await MapsInterop.ClearMarkers();
+
+        await MapsInterop.ClearMarkers();
+
+        var res = await Http.GetFromJsonAsync<SubZonasAutDTO>($"{_baseUrl}/api/MarkMaps/getall/{_zonaSeleccionada}/{_anioSeleccionado}");    
+    
+        subzonas = res.response;
+        _buscado = true;
+
+        foreach(var subzona in subzonas) {
+            if(!string.IsNullOrWhiteSpace(subzona.Coordenadas)) {
+                var partes = subzona.Coordenadas.Split(',');
+                if(partes.Length >= 2 &&
+                    double.TryParse(partes[1], out double lat) &&
+                    double.TryParse(partes[0], out double lng)) {
+                    string titulo = subzona.Nombre;
+                    string contenido = $"<b>{subzona.Nombre}</b><br>Disponibilidad: {subzona.Ocupados}/{subzona.CapacidadTotal}";
+                   
+                    
+
+                    if(subzona.Ocupados >= subzona.CapacidadTotal)
+                        color = "rojo";
+                    else if(subzona.Ocupados == 3)
+                        color = "ambar";
+                    else
+                        color = "verde";
+
+                    //await JS.InvokeVoidAsync("googleMaps.addMarker", lat, lng, subzona.Nombre, contenido, color);
+                    await MapsInterop.AddMarker(lat, lng, titulo, contenido,color);
+                }
+            }
+        }
+
+    }
+
+    // Método para obtener lista de años (puedes ajustar el rango)
+    private List<int> ObtenerAnios() {
+        var anioActual = DateTime.Now.Year;
+        var anios = new List<int>();
+
+        // Generar años desde 2024 hasta 3 años adelante
+        for(int i = 2024; i <= anioActual + 3; i++) {
+            anios.Add(i);
+        }
+
+        return anios;
+    }
+
+    private void AgregarSubzona(SubZonasAutApi subzona) {
+        Console.WriteLine($"Subzona seleccionada: {subzona.Nombre}");
+        MudDialog?.Close(DialogResult.Ok(subzona));
+    }
+
+
+    void Cerrar() => MudDialog?.Close();
+}

@@ -1,0 +1,78 @@
+﻿@page "/repgrafico"
+@page "/reporte-giro"
+@inject HttpClient Http
+@inject IJSRuntime JS
+
+
+<h3 class="text-center">Reporte de Giros por Mes</h3>
+
+<canvas id="graficoGiros" class="grafico-responsive"></canvas>
+
+@if(Leyendas?.Any() == true) {
+    <div class="d-flex justify-center mt-4">
+        <MudCard Style="max-width: 800px; width: 100%;">
+            <MudCardContent>
+                <MudText Typo="Typo.h6" Align="Align.Center">Leyenda de Giros</MudText>
+                <MudDivider Class="my-2" />
+                <MudTable Items="Leyendas" Bordered="true" Hover="true" Dense="true">
+                    <HeaderContent>
+                        <MudTh class="text-center" Style="width: 80px;">Letra</MudTh>
+                        <MudTh>Nombre de Giro</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd Class="text-center"><strong>@context.Letra</strong></MudTd>
+                        <MudTd>@context.NombreCompleto</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudCardContent>
+        </MudCard>
+    </div>
+}
+
+@code {
+    public record GiroDto(string Nombre, int Total);
+    public record MesConGirosDTO(int Anio, int Mes, List<GiroDto> Giros);
+
+    private List<(string Letra, string NombreCompleto)> Leyendas = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if(firstRender) {
+            var datos = await Http.GetFromJsonAsync<List<MesConGirosDTO>>("http://localhost:5297/api/Grafico/graficogiro");
+            
+            var meses = datos.Select(x => x.Mes).Distinct().OrderBy(m => m).ToList();
+            var labelsMeses = meses.Select(m => new DateTime(2025, m, 1).ToString("MMM", new System.Globalization.CultureInfo("es-PE"))).ToList();
+            
+            var nombresGiros = datos.SelectMany(d => d.Giros.Select(g => g.Nombre?.Trim() ?? ""))
+                                    .Distinct()
+                                    .OrderBy(n => n)
+                                    .ToList();
+
+            var letras = nombresGiros.Select((g, i) => ((char)('A' + i)).ToString()).ToList();
+
+            
+            var datasets = nombresGiros.Select((nombreGiro, i) => {
+                var dataPorMes = meses.Select(mes =>
+                    datos.FirstOrDefault(x => x.Mes == mes)?
+                        .Giros.FirstOrDefault(g => (g.Nombre?.Trim() ?? "") == nombreGiro)?.Total ?? 0
+                ).ToList();
+
+                var color = $"hsl({i * 40 % 360}, 70%, 60%)"; // Colores variados
+
+                return new {
+                    label = letras[i],
+                    data = dataPorMes,
+                    backgroundColor = color
+                };
+
+            }).ToList();
+
+            // Guardar leyendas
+            Leyendas = nombresGiros.Select((g, i) => (Letra: letras[i], NombreCompleto: g)).ToList();
+
+            // Enviar a JavaScript
+            await JS.InvokeVoidAsync("generarGraficoGiros", labelsMeses, datasets);
+            StateHasChanged();
+        }
+    }
+
+}

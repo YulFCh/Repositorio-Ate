@@ -1,0 +1,29 @@
+﻿@inject GoogleMapsInterop MapsInterop
+@using SistemaLicencias.SHARED.DTOs
+
+
+
+
+<div id="my_map" style="height: 600px; width: 100%;"></div>
+
+
+@code {
+    [Parameter] public List<CoordenadasDTO> Marcadores { get; set; }
+    public double Latitud { get; set; }
+    public double Longitud { get; set; }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender) {
+        if(firstRender) {
+            await MapsInterop.InitMap();
+
+            if(Marcadores != null) {
+                foreach(var m in Marcadores) {
+                    await MapsInterop.AddMarker(m.Lat, m.Lng, m.Titulo,m.Contenido,m.Color);
+                }
+            }
+        }
+    }
+    //PrPKfv159wTI5z8Xlxyn
+
+    
+}

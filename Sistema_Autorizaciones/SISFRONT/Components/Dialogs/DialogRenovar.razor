@@ -1,0 +1,175 @@
+﻿@inject HttpClient Http
+@using SistemaLicencias.SHARED.DTOs
+@using MudBlazor
+@using System.Text.Json
+@inject SessionService sessions
+@inject IDialogService DialogService
+@inject IJSRuntime JS
+
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudContainer Style="max-width: 900px;">
+
+            @* Datos Generales *@
+            <MudText Typo="Typo.h6" Class="mb-4">
+                <MudIcon Icon="@Icons.Material.Filled.PushPin" Color="Color.Error" Size="Size.Small" />
+                Datos Generales
+            </MudText>
+
+            <MudGrid>
+                <MudItem xs="12" sm="6">
+                    <MudDatePicker Label="Fecha de Solicitud"
+                                   @bind-Date="fechaSolicitud"
+                                   DateFormat="dd/MM/yyyy"                                   
+                                   Margin="Margin.Dense"
+                                   Required="true"
+                                   Variant="Variant.Outlined" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudTextField Label="N° Expediente"
+                                  @bind-Value="numeroExpediente"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined"
+                                  Required="true" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudDatePicker Label="Fecha Expediente"
+                                   @bind-Date="fechaExpediente"
+                                   DateFormat="dd/MM/yyyy"
+                                   Margin="Margin.Dense"
+                                   Required="true"
+                                   Variant="Variant.Outlined" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudTextField Label="N° Autorización"
+                                  @bind-Value="numeroAutorizacion"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudTextField Label="N° Resolución"
+                                  @bind-Value="numeroResolucion"
+                                  Margin="Margin.Dense"
+                                  Variant="Variant.Outlined" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudDatePicker Label="Fecha Resolución"
+                                   @bind-Date="fechaResolucion"
+                                   DateFormat="dd/MM/yyyy"
+                                   Margin="Margin.Dense"
+                                   Variant="Variant.Outlined" />
+                </MudItem>
+
+                <MudItem xs="12" sm="6">
+                    <MudDatePicker Label="Vigencia Hasta"
+                                   @bind-Date="vigenciaHasta"
+                                   Margin="Margin.Dense"
+                                   DateFormat="dd/MM/yyyy"
+                                   Required="true"
+                                   Variant="Variant.Outlined" />
+                </MudItem>
+            </MudGrid>
+
+        </MudContainer>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Cancel" Disabled="@procesando">Cancelar</MudButton>
+        <MudButton Color="Color.Success"
+                   Variant="Variant.Filled"
+                   StartIcon="@Icons.Material.Filled.Check"
+                   OnClick="CompletarRenovacion"
+                   Disabled="@procesando">
+            @if(procesando) {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                <MudText Class="ms-2">Procesando...</MudText>
+            }
+            else {
+                <span>COMPLETAR RENOVACIÓN</span>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public int IdSolicitudOriginal { get; set; }
+    [Parameter] public string OperadorActual { get; set; }
+    [Parameter] public string EstacionActual { get; set; }
+
+    //private string _baseUrl = "http://192.168.0.139:148";
+    //private string _baseUrl = "http://192.168.4.225:181";
+    private string _baseUrl = "http://localhost:5297";
+    // Datos Generales
+    private DateTime? fechaSolicitud = DateTime.Today;
+    private string numeroExpediente = "";
+    private DateTime? fechaExpediente = DateTime.Today;
+    private string numeroAutorizacion = "";
+    private string numeroResolucion = "";
+    private DateTime? fechaResolucion = DateTime.Today;
+    private DateTime? vigenciaHasta = DateTime.Today.AddYears(1);
+
+    private bool procesando = false;
+
+    private async Task CompletarRenovacion() {
+        // Validaciones
+        if(!fechaSolicitud.HasValue || string.IsNullOrWhiteSpace(numeroExpediente) ||
+            !fechaExpediente.HasValue || !vigenciaHasta.HasValue) {
+            Snackbar.Add("Por favor complete todos los campos requeridos", Severity.Warning);
+            return;
+        }
+
+        procesando = true;
+
+        try {
+            var renovacionDto = new RenovacionDTO {
+                IdOriginal = IdSolicitudOriginal,
+                NroAutorizacion = numeroAutorizacion,
+                FechaLicencia = fechaSolicitud.Value,
+                NroExpediente = numeroExpediente,
+                FechaExpediente = fechaExpediente.Value,
+                NroResolucion = numeroResolucion,
+                FechaResolucion = fechaResolucion ?? DateTime.Today,
+                VigenciaHasta = vigenciaHasta.Value,
+                Operador = OperadorActual,
+                Estacion = EstacionActual
+            };
+
+            var response = await Http.PostAsJsonAsync($"{_baseUrl}/api/Solicitud/renovar-licencia", renovacionDto);
+
+            if(response.IsSuccessStatusCode) {
+                var resultado = await response.Content.ReadFromJsonAsync<RenovacionRespuestaDto>();
+
+                if(resultado?.Exitoso == true) {
+                    Snackbar.Add(resultado.Mensaje, Severity.Success);
+                    MudDialog.Close(DialogResult.Ok(true));
+                }
+                else {
+                    Snackbar.Add(resultado?.Mensaje ?? "Error al renovar licencia", Severity.Error);
+                }
+            }
+            else {
+                var errorMsg = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Error: {errorMsg}", Severity.Error);
+            }
+        }
+        catch(Exception ex) {
+            Snackbar.Add($"Error inesperado: {ex.Message}", Severity.Error);
+        }
+        finally {
+            procesando = false;
+        }
+    }
+
+    private void Cancel() {
+        MudDialog.Cancel();
+    }
+}

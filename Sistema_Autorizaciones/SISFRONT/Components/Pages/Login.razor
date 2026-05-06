@@ -1,0 +1,76 @@
+﻿@page "/"
+@layout Layout.EmptyLayout
+@using MudBlazor
+@inject IDialogService dialogS
+@inject NavigationManager nav
+@inject HttpClient Http
+@using SistemaLicencias.SHARED.DTOs
+@inject ProtectedSessionStorage SessionStorage
+@inject IJSRuntime JS
+
+
+<MudPaper Elevation="0"
+          Style="
+              min-height: 100dvh;
+              width: 100%;
+              overflow: hidden;
+              background: linear-gradient(135deg, rgba(31, 97, 141, 0.6), rgba(193, 37, 91, 0.6)),
+                          url('img/centrada.jpg') no-repeat center center / cover;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              padding: 1rem;
+              box-sizing: border-box;">
+
+    <div style="
+        background: white;
+        border-radius: 24px;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+        padding: 2.2rem 1.5rem;
+        max-width: 380px;
+        width: 100%;
+        text-align: center;
+        color: #333;">
+
+        <MudImage Src="img/escudo.png"
+                  Alt="Logo Municipalidad"
+                  Width="100"
+                  Class="mb-3"
+                  Style="filter: drop-shadow(2px 2px 4px #00000066);" />
+
+        <MudText Typo="Typo.h6" Class="fw-bold mb-1 text-dark">
+            Sistema de Autorizaciones
+        </MudText>
+        <MudText Typo="Typo.subtitle2" Class="mb-4 text-secondary">
+            Municipalidad Distrital de Ate
+        </MudText>
+
+        <MudForm @ref="_form">
+            <MudStack Spacing="2">
+                <MudTextField @bind-Value="log.user"
+                              Label="Usuario"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              Margin="Margin.Dense"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Person" />
+
+                <MudTextField @bind-Value="log.pass"
+                              Label="Contraseña"
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              Margin="Margin.Dense"
+                              InputType="InputType.Password"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Lock" />
+
+                <MudButton Variant="Variant.Filled"
+                           FullWidth="true"
+                           Color="Color.Primary"
+                           OnClick="LoginUsuario">
+                    INICIAR SESIÓN
+                </MudButton>
+            </MudStack>
+        </MudForm>
+    </div>
+</MudPaper>

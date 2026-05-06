@@ -1,0 +1,144 @@
+﻿@inject HttpClient Http
+@inject IJSRuntime JS
+@using SistemaLicencias.SHARED.DTOs
+@using MudBlazor
+@inject GoogleMapsInterop googleMapsInterop
+
+
+<MudDialog>
+    <DialogContent>
+
+
+
+
+
+        <!-- Bloque: Bienes de dominio privado -->
+        <MudText Typo="Typo.body1" Class="mb-1 fw-semibold">Bienes de dominio privado</MudText>
+        <MudGrid Dense="true" Class="req-grid">
+            <MudItem xs="12">
+                <MudCheckBox @bind-Checked="ckFormato" T="bool" Class="dense-checkbox"
+                             Label="El Formato de Solicitud - Declaración Jurada, llenado y firmado por el solicitante." />
+            </MudItem>
+            <MudItem xs="12">
+                <MudCheckBox @bind-Checked="ckDimensiones" T="bool" Class="dense-checkbox"
+                             Label="Las dimensiones del área de exhibición del elemento de publicidad exterior." />
+            </MudItem>
+            <MudItem xs="12">
+                <MudCheckBox @bind-Checked="ckFotos" T="bool" Class="dense-checkbox"
+                             Label="Las fotografías actuales y fotomontajes donde se pretende instalar el elemento de publicidad exterior, donde se aprecie su entorno urbano, sin incluir la leyenda o el contenido de la publicidad." />
+            </MudItem>
+            <MudItem xs="12">
+                <MudCheckBox @bind-Checked="ckAiresTerceros" T="bool" Class="dense-checkbox"
+                             Label="Si el EPE se ubica sobre aires de propiedad de terceros, contar con la autorización del(os) propietario(s) de la edificación colindante." />
+            </MudItem>
+            <MudItem xs="12">
+                <MudCheckBox @bind-Checked="ckPropiedadComun" T="bool" Class="dense-checkbox"
+                             Label="Si el EPE se ubica en bien de propiedad común, presentar la autorización por mayoría calificada de la junta de propietarios o del presidente de la junta." />
+            </MudItem>
+            <MudItem xs="12">
+                <MudCheckBox @bind-Checked="ckPago" T="bool" Class="dense-checkbox"
+                             Label="Pago por derecho de trámite." />
+            </MudItem>
+
+            <!-- Bloque: Documentos de estructura (tipologías 2,3,6,7) -->
+            @if(new[] { "2", "3", "6", "7" }.Contains(idTipologias)) {
+                <MudDivider Class="my-3 divider-soft" />
+                <MudText Typo="Typo.body1" Class="mb-1 fw-semibold">Documentos técnicos de estructura</MudText>
+
+                <MudItem xs="12">
+                    <MudCheckBox @bind-Checked="ckPlanoUbicacion" T="bool" Class="dense-checkbox"
+                                 Label="Plano de ubicación a escala 1/500 o 1/250 (RNE), con coordenadas UTM WGS84 del elemento y distancia de la arista más saliente al borde exterior de la pista, suscrito por arquitecto colegiado." />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudCheckBox @bind-Checked="ckPlanoFachada" T="bool" Class="dense-checkbox"
+                                 Label="Para EPE en azoteas y fachadas: plano de elevación de fachada donde se aprecie la proporción entre fachada y elemento publicitario, suscrito por arquitecto colegiado." />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudCheckBox @bind-Checked="ckMemoriaEstructuras" T="bool" Class="dense-checkbox"
+                                 Label="Memoria descriptiva de estructuras, suscrita por Ingeniero Civil." />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudCheckBox @bind-Checked="ckPlanoEstructuras" T="bool" Class="dense-checkbox"
+                                 Label="Plano de estructuras a escala 1/75 o 1/100." />
+                </MudItem>
+            }
+
+            <!-- Bloque: Instalaciones eléctricas (tipologías 2,3,4) -->
+            @if(new[] { "2", "3", "4" }.Contains(idTipologias)) {
+                <MudDivider Class="my-3 divider-soft" />
+                <MudText Typo="Typo.body1" Class="mb-1 fw-semibold">Instalaciones eléctricas (si aplica)</MudText>
+
+                <MudItem xs="12">
+                    <MudCheckBox @bind-Checked="ckMemoriaElectrica" T="bool" Class="dense-checkbox"
+                                 Label="Memoria descriptiva con especificaciones técnicas, suscrita por Ing. Electricista o Mecánico Electricista." />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudCheckBox @bind-Checked="ckPlanoElectrico" T="bool" Class="dense-checkbox"
+                                 Label="Plano de instalaciones eléctricas a escala 1/75 o 1/100, suscrito por Ing. Electricista o Mecánico Electricista." />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudCheckBox @bind-Checked="ckCartaFactibilidad" T="bool" Class="dense-checkbox"
+                                 Label="Solicitud/carta de factibilidad de servicio eléctrico a la empresa prestadora del servicio." />
+                </MudItem>
+            }
+
+            <!-- Bloque: Temporalidad / colindantes (tipologías 1,9) -->
+            @if(new[] { "1", "9" }.Contains(idTipologias)) {
+                <MudDivider Class="my-3 divider-soft" />
+                <MudText Typo="Typo.body1" Class="mb-1 fw-semibold">Temporalidad y colindantes</MudText>
+
+                <MudItem xs="12">
+                    <MudCheckBox @bind-Checked="ckExhibicionTemporal" T="bool" Class="dense-checkbox"
+                                 Label="Documento simple del solicitante indicando el tiempo de exhibición (máximo 6 meses)." />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudCheckBox @bind-Checked="ckAutorizacionColindante" T="bool" Class="dense-checkbox"
+                                 Label="Para elementos en exteriores (laterales) de bienes de dominio privado: autorización expresa del propietario colindante del inmueble." />
+                </MudItem>
+            }
+        </MudGrid>
+
+
+
+
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Color="Color.Secondary" OnClick="Cerrar">Cerrar</MudButton>
+        <MudButton Color="Color.Primary" OnClick="AgergarUbicacion">OK</MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; }
+
+    private string idTipologias = "2";
+
+    // Privado
+    private bool ckFormato, ckDimensiones, ckFotos, ckAiresTerceros, ckPropiedadComun, ckPago;
+
+    // Estructura
+    private bool ckPlanoUbicacion, ckPlanoFachada, ckMemoriaEstructuras, ckPlanoEstructuras;
+
+    // Eléctrico
+    private bool ckMemoriaElectrica, ckPlanoElectrico, ckCartaFactibilidad;
+
+    // Temporalidad/colindantes
+    private bool ckExhibicionTemporal, ckAutorizacionColindante;
+
+
+
+
+   
+    private void AgergarUbicacion() {
+
+        MudDialog?.Close(DialogResult.Ok(""));
+    }
+
+
+    void Cerrar() => MudDialog?.Close();
+
+
+
+}

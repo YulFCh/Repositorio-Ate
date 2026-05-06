@@ -1,0 +1,328 @@
+﻿@inject HttpClient Http
+@using SistemaLicencias.SHARED.DTOs
+@using MudBlazor
+
+@using Newtonsoft
+@inject SessionService sessions
+@inject IDialogService DialogService
+@inject IJSRuntime JS
+<MudDialog>
+    <DialogContent>
+        <MudPaper Class="p-4" Style="min-width:500px;">
+
+            <MudGrid>
+                <MudItem xs="12" sm="4">
+                    <MudSelect Label="Tipo Documento" T="int" @bind-Value="_tipoDocumento">
+                        <MudSelectItem Value="0" Disabled="true">Seleccione:</MudSelectItem>
+                        <MudSelectItem Value="2">RECIBO DE PAGO</MudSelectItem>
+                        @if(sessions.UsuarioActual.id_perfil == "0000019") {
+                            <MudSelectItem Value="7">ANEXO</MudSelectItem>
+                        }
+
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" sm="4">
+                    <MudTextField Label="N° Documento" T="string" @bind-Value="_numeroDocumento" />
+                </MudItem>
+
+                <MudItem xs="12" sm="4">
+                    <MudDatePicker Label="Fecha Doc." @bind-Date="_fechaDocumento" />
+                </MudItem>
+            </MudGrid>
+
+            <MudGrid Class="mt-3 align-items-end">
+                <!-- Botón personalizado para cargar solo PDF -->
+                <MudItem xs="12" sm="8">
+                    <label for="inputFilePdf" style="cursor:pointer;">
+                        <div class="mud-button mud-button-outlined mud-button-info" style="display:inline-flex; align-items:center; padding:6px 16px; border-radius:4px;">
+
+                            Seleccionar PDF EPE
+                        </div>
+                    </label>
+
+                    <InputFile id="inputFilePdf"
+                               OnChange="OnFileSelected"
+                               accept=".pdf"
+                               style="display:none;" />
+
+                    <MudText Typo="Typo.caption" Class="mt-1">@_archivoNombre</MudText>
+                </MudItem>
+
+
+
+                <!-- Botón adjuntar -->
+                <MudItem xs="6" sm="2">
+                    <MudButton Color="Color.Primary"
+                               Variant="Variant.Filled"
+                               OnClick="SubirDocumento"
+                               Disabled="!BotonAdjuntarHabilitado">
+                        <MudIcon Icon="@Icons.Material.Filled.Add" Class="me-1" />
+                        Adjuntar
+                    </MudButton>
+                </MudItem>
+
+                <!-- Botón limpiar -->
+                <MudItem xs="6" sm="2">
+                    <MudButton Color="Color.Secondary"
+                               Variant="Variant.Outlined"
+                               OnClick="LimpiarCampos">
+                        <MudIcon Icon="@Icons.Material.Filled.Clear" Class="me-1" />
+                        Limpiar
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+
+
+            <MudDivider Class="my-3" />
+
+            <MudTable Items="_documentos" Dense="true" Bordered="true" Hover="true" Elevation="0" Class="mb-4">
+                <HeaderContent>
+                    <MudTh>Tipo</MudTh>
+                    <MudTh>Número</MudTh>
+                    <MudTh>Fecha</MudTh>
+                    <MudTh>Documento</MudTh>
+                    <MudTh></MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd>@context.desc_anexos_doc</MudTd>
+                    <MudTd>@context.numero_doc</MudTd>
+                    <MudTd>@context.fecha_doc?.ToShortDateString()</MudTd>
+                    <MudTd>@context.NombreDoc</MudTd>
+                    <MudTd Class="text-center">
+                        @if(context.id_doc_sol_anexos == 7) {
+                            <MudTooltip Text="Documento">
+                                <MudIconButton Icon="@Icons.Material.Filled.FolderOpen"
+                                               Color="Color.Secondary"
+                                               Size="Size.Small"
+                                               Class="ms-1"
+                                               OnClick="() => ObtenerDocumento(context.RutaDoc)" />
+                            </MudTooltip>
+                        }
+
+                        <MudTooltip Text="Anular">
+                            <MudIconButton Icon="@Icons.Material.Filled.Cancel"
+                                           Color="Color.Error"
+                                           Size="Size.Small"
+                                           Class="ms-1"
+                                           OnClick="() => ConfirmarEliminar(context.id_doc_sol_anexos,context.NombreDoc)" />
+                        </MudTooltip>
+
+                    </MudTd>
+                </RowTemplate>
+                <NoRecordsContent>
+                    <MudText>No se encontró ningún documento</MudText>
+                </NoRecordsContent>
+            </MudTable>
+        </MudPaper>
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="Cerrar">Cerrar</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] public IMudDialogInstance MudDialog { get; set; }
+    [Parameter] public int IdSolicitud { get; set; }
+
+    //private string _baseUrl = "http://192.168.0.139:148";
+    private string _baseUrl = "http://localhost:5297";
+    private int _tipoDocumento;
+    private string _numeroDocumento;
+    private DateTime? _fechaDocumento;
+    private IBrowserFile _archivoSeleccionado;
+    private string _archivoNombre = "";
+
+    private List<DocumentoAdjuntoEPE> _documentos = new();
+
+    private async Task OnFileSelected(InputFileChangeEventArgs e) {
+        _archivoSeleccionado = e.File;
+        _archivoNombre = _archivoSeleccionado?.Name;
+    }
+
+    protected override async Task OnInitializedAsync() {
+        await ListarDocumentos(); // Cargar documentos al inicializar el componente
+    }
+
+
+    private async Task SubirDocumento() {
+        if(string.IsNullOrWhiteSpace(_numeroDocumento) || _tipoDocumento == 0) {
+            await DialogService.ShowMessageBox("⚠️ Datos incompletos", "Debes ingresar el número de documento y seleccionar un tipo.");
+            return;
+        }
+
+        if(_tipoDocumento == 7 && _archivoSeleccionado == null) {
+            await DialogService.ShowMessageBox("⚠️ Archivo requerido", "Debes seleccionar un archivo PDF para anexos.");
+            return;
+        }
+
+        try {
+            var content = new MultipartFormDataContent();
+
+            // Solo si hay archivo (boleta puede venir sin archivo)
+            if(_archivoSeleccionado != null) {
+                var stream = _archivoSeleccionado.OpenReadStream(10 * 1024 * 1024);
+                var fileContent = new StreamContent(stream);
+                fileContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(_archivoSeleccionado.ContentType);
+                content.Add(fileContent, "arcv", _archivoSeleccionado.Name);
+            }
+
+            content.Add(new StringContent(IdSolicitud.ToString()), "idSolicitud");
+            content.Add(new StringContent(_tipoDocumento.ToString()), "tipoDoc");
+            content.Add(new StringContent(_numeroDocumento), "nroDoc");
+            content.Add(new StringContent(_fechaDocumento?.ToString("yyyy-MM-dd") ?? DateTime.Now.ToString("yyyy-MM-dd")), "fechaDoc");
+            content.Add(new StringContent(sessions.UsuarioActual.login), "operadorReg");
+            content.Add(new StringContent("1"), "flag");
+
+            var response = await Http.PostAsync($"{_baseUrl}/api/CrudEPE/anexosPub", content);
+
+            if(response.IsSuccessStatusCode) {
+                _documentos.Add(new DocumentoAdjuntoEPE {
+                    desc_anexos_doc = _tipoDocumento == 2 ? "RECIBO DE PAGO" : "ANEXO",
+                    numero_doc = _numeroDocumento,
+                    fecha_doc = _fechaDocumento
+                });
+
+                LimpiarCampos();
+                Console.WriteLine("✅ Documento subido correctamente");
+                await ListarDocumentos();
+            }
+            else {
+                var error = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"❌ Error al subir: {error}");
+            }
+        }
+        catch(Exception ex) {
+            Console.WriteLine($"❌ Error inesperado: {ex.Message}");
+        }
+    }
+
+
+
+    private async Task ListarDocumentos() {
+        try {
+
+            var url = $"{_baseUrl}/api/Consultas/getanexpub/{IdSolicitud}";
+
+            var response = await Http.GetFromJsonAsync<List<AnexosAPI2>>(url);
+
+            if(response != null && response.Any()) {
+                // Limpiar la lista actual de documentos
+                _documentos.Clear();
+
+                // Agregar los documentos a la lista
+                foreach(var anexos in response) {
+                    _documentos.Add(new DocumentoAdjuntoEPE {
+                        id_doc_sol_anexos = anexos.id_doc_sol_anexos,
+                        desc_anexos_doc = anexos.desc_anexos_doc,
+                        numero_doc = anexos.numero_doc,
+                        fecha_doc = anexos.fecha_doc,
+                        NombreDoc = anexos.NombreDoc,
+                        RutaDoc = anexos.RutaDoc
+                    });
+                }
+                StateHasChanged();
+            }
+            else {
+                Console.WriteLine("❌ No se encontraron documentos");
+            }
+        }
+        catch(Exception ex) {
+            Console.WriteLine($"❌ Error al listar documentos: {ex.Message}");
+        }
+    }
+
+    private async Task ConfirmarEliminar(int idAnexo, string nombre) {
+        bool? confirm = await DialogService.ShowMessageBox(
+            "¿Estás seguro?",
+            $"¿Deseas eliminar el documento \"{nombre}\"?",
+            yesText: "Sí, eliminar", cancelText: "Cancelar");
+
+        if(confirm == true) {
+            Console.WriteLine($"{idAnexo}");
+            if(idAnexo > 0)
+                await EliminarAnexo(idAnexo);
+
+        }
+    }
+
+    private async Task EliminarAnexo(int idAnexo) {
+        try {
+
+            var url = $"{_baseUrl}/api/CrudEPE/uptest-anexo/{idAnexo}?estado=2";
+
+
+            var response = await Http.PutAsync(url, null);
+
+            if(response.IsSuccessStatusCode) {
+                await DialogService.ShowMessageBox(
+                    "Eliminación exitosa",
+                    "📄 El documento fue eliminado correctamente.",
+                    yesText: "Aceptar");
+
+                await ListarDocumentos(); // recarga la tabla
+            }
+            else {
+                var mensaje = await response.Content.ReadAsStringAsync();
+
+                await DialogService.ShowMessageBox(
+                    "Error al eliminar",
+                    $"❌ No se pudo eliminar el documento:\n{mensaje}",
+                    yesText: "Cerrar");
+            }
+
+        }
+        catch(Exception ex) {
+            await DialogService.ShowMessageBox(
+                "Error inesperado",
+                $"💥 Ocurrió un error:\n{ex.Message}",
+                yesText: "Cerrar");
+        }
+
+    }
+
+
+    private async Task ObtenerDocumento(byte[] rutaDoc) {
+
+        string base64 = Convert.ToBase64String(rutaDoc);
+
+        // Nombre del archivo para la descarga
+        string nombreArchivo = "documento.pdf";
+
+        // Generamos la URL del archivo PDF en formato base64
+        string pdfUrl = $"data:application/pdf;base64,{base64}";
+
+        // Usamos JavaScript para descargar el PDF
+        await JS.InvokeVoidAsync("downloadFile", pdfUrl, nombreArchivo);
+
+    }
+
+
+    private void LimpiarCampos() {
+        _numeroDocumento = "";
+        _archivoNombre = "";
+        _archivoSeleccionado = null;
+        _fechaDocumento = null;
+    }
+
+    private void Cerrar() => MudDialog?.Close();
+
+    private bool BotonAdjuntarHabilitado =>
+    _tipoDocumento switch {
+        2 => !string.IsNullOrWhiteSpace(_numeroDocumento) && _tipoDocumento != 0,
+        7 => _archivoSeleccionado != null && !string.IsNullOrWhiteSpace(_numeroDocumento) && _tipoDocumento != 0,
+        _ => false
+    };
+
+
+    public class DocumentoAdjuntoEPE {
+        public int id_doc_sol_anexos { get; set; } // NUEVO
+        public string desc_anexos_doc { get; set; }
+        public string numero_doc { get; set; }
+        public DateTime? fecha_doc { get; set; }
+        public string? NombreDoc { get; set; }
+        public byte[] RutaDoc { get; set; }
+    }
+
+}
