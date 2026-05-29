@@ -7,6 +7,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<ConsultaPatrimService>();
+builder.Services.AddScoped<CargaDatosService>();
 
 // ✅ CORS AQUÍ (ANTES DE Build)
 builder.Services.AddCors(options =>
