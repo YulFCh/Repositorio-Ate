@@ -8,57 +8,91 @@
 @using SistemaLicencias.SHARED.DTOs
 @inject SessionService servicess
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="my-4 mx-auto">
-    <MudPaper Class="pa-6 mx-auto" Elevation="2" Style="border-radius: 16px;">
-        <MudForm @ref="form">
-            <MudText Typo="Typo.h5" Class="mb-2 text-primary">📄 Datos del Solicitante</MudText>
-            <MudDivider Class="mb-4" />
+<link href="css/EstiloFormSolicitante.css" rel="stylesheet" />
 
-            <MudGrid Spacing="3">
+<MudContainer MaxWidth="MaxWidth.Medium" Class="py-10 form-page-bg">
+
+    <MudPaper Class="form-card pa-8 mx-auto" Elevation="6">
+
+        <MudForm @ref="form">
+
+            <!-- HEADER -->
+            <div class="mb-6">
+                <MudText Typo="Typo.h4" Color="Color.Primary" Class="fw-bold">
+                    Datos del Solicitante
+                </MudText>
+
+                <MudDivider Class="mt-4" />
+            </div>
+
+            <!-- GRID -->
+            <MudGrid Spacing="4">
+
+                <!-- Tipo documento -->
                 <MudItem xs="12" sm="6">
-                    <MudSelect T="int" Label="Tipo de Documento" @bind-Value="modelo.TipoDoc" Variant="Variant.Outlined" Required="true">
+                    <MudSelect T="int"
+                               Label="Tipo de Documento"
+                               @bind-Value="modelo.TipoDoc"
+                               Variant="Variant.Outlined"
+                               Required="true">
                         <MudSelectItem Value="0" Disabled="true">Seleccione:</MudSelectItem>
                         <MudSelectItem Value="1">DNI</MudSelectItem>
                         <MudSelectItem Value="4">RUC</MudSelectItem>
                     </MudSelect>
                 </MudItem>
 
+                <!-- DNI -->
                 <MudItem xs="12" sm="6">
                     <MudTextField Label="Nro. Documento"
-                                  @bind-Value="modelo.nrodni"
+                                  Value="@modelo.nrodni"
+                                  ValueChanged="@(async (string value) => await OnDniChanged(value))"
+                                  ValueExpression="@(() => modelo.nrodni)"
+                                  Immediate="true"
                                   MaxLength="8"
                                   Variant="Variant.Outlined"
                                   Required="true"
                                   RequiredError="El DNI es obligatorio." />
                 </MudItem>
 
+                <!-- Nombres -->
                 <MudItem xs="12" sm="6">
                     <MudTextField Label="Nombres Completos"
                                   @bind-Value="modelo.nombre"
                                   Variant="Variant.Outlined"
+                                  Class="@ClaseNombre"
                                   Required="true"
                                   RequiredError="Este campo es obligatorio." />
                 </MudItem>
 
+                <!-- Dirección -->
                 <MudItem xs="12" sm="6">
                     <MudTextField Label="Dirección Fiscal"
                                   @bind-Value="modelo.direccionFiscal"
                                   Variant="Variant.Outlined"
+                                  Class="@ClaseDireccion"
                                   Required="true"
-                                  RequiredError="Este campo es obligatorio."
                                   Placeholder="Ej. Av. Las Flores" />
                 </MudItem>
 
+                <MudItem xs="12">
+                    <MudTextField Label="Asociación al que pertenece"
+                                  @bind-Value="modelo.Asociacion"
+                                  Variant="Variant.Outlined"
+                                  ReadOnly="true"
+                                  Class="@ClaseAsociacion" />
+                </MudItem>
+
+                <!-- Teléfono -->
                 <MudItem xs="12" sm="6">
                     <MudTextField Label="Teléfono"
                                   @bind-Value="modelo.telefono"
                                   Variant="Variant.Outlined"
                                   Required="true"
                                   MaxLength="9"
-                                  RequiredError="Este campo es obligatorio."
                                   Placeholder="Ej. 987654321" />
                 </MudItem>
 
+                <!-- Email -->
                 <MudItem xs="12" sm="6">
                     <MudTextField Label="E-mail"
                                   @bind-Value="modelo.correo"
@@ -66,48 +100,72 @@
                                   Placeholder="ejemplo@correo.com" />
                 </MudItem>
 
+                <!-- CHECKBOXES BLOQUE -->
+                <MudItem xs="12">
+                    <MudPaper Class="pa-4 rounded-lg checks-box" Outlined="true">
 
-                <MudItem xs="12" sm="6">
-                    <MudCheckBox T="bool"
-                                 @bind-value="TieneDiscapacidad"
-                                 Label="¿Tiene alguna discapacidad?"
-                                 Color="Color.Primary" />
+                        <MudText Typo="Typo.subtitle1" Class="mb-3">
+                            Información adicional
+                        </MudText>
 
+                        <MudGrid Spacing="2" AlignItems="Center">
+
+                            <MudItem xs="12" sm="6">
+                                <MudCheckBox T="bool"
+                                             @bind-Value="TieneDiscapacidad"
+                                             Label="¿Tiene alguna discapacidad?"
+                                             Color="Color.Primary" />
+                            </MudItem>
+
+                            <MudItem xs="12" sm="6">
+                                <MudCheckBox T="bool"
+                                             Label="¿Pertenece al distrito de Ate?"
+                                             Color="Color.Primary"
+                                             @bind-Value="PerteneceDistrito" />
+                            </MudItem>
+
+                        </MudGrid>
+
+                        @if (TieneDiscapacidad)
+                        {
+                            <MudCollapse Expanded="true">
+                                <MudTextField Label="N° Carnet CONADIS"
+                                              @bind-Value="modelo.nroConadis"
+                                              Variant="Variant.Outlined"
+                                              Class="mt-3" />
+                            </MudCollapse>
+                        }
+
+                    </MudPaper>
                 </MudItem>
-
-                @if(TieneDiscapacidad) {
-                    <MudItem xs="12" sm="6">
-                        <MudCollapse Expanded="true">
-                            <MudTextField Label="N° Carnet CONADIS"
-                                          @bind-Value="modelo.nroConadis"
-                                          Variant="Variant.Outlined"
-                                          Placeholder="Ej. 12345678-9"
-                                         />
-                        </MudCollapse>
-                    </MudItem>
-                }
-
-                <MudCheckBox T="bool"
-                             Label="¿Pertenece al distrito de Ate?"
-                             Color="Color.Primary"
-                             @bind-Value="PerteneceDistrito" />
-
-
 
             </MudGrid>
 
-            <MudDivider Class="my-4" />
+            <MudDivider Class="my-6" />
 
+            <!-- BOTÓN -->
             <div class="d-flex justify-center">
-                @if(cargando) {
-                    <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+
+                @if (cargando)
+                {
+                    <MudProgressCircular Color="Color.Primary"
+                                         Size="Size.Large"
+                                         Indeterminate="true" />
                 }
-                else {
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="EnviarFormulario">
-                        Enviar
+                else
+                {
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Size="Size.Large"
+                               StartIcon="@Icons.Material.Filled.Save"
+                               OnClick="EnviarFormulario"
+                               Class="btn-submit">
+                        Guardar
                     </MudButton>
                 }
+
             </div>
+
         </MudForm>
     </MudPaper>
 </MudContainer>

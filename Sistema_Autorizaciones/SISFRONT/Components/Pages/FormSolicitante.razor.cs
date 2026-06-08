@@ -150,6 +150,81 @@ namespace SISFRONT.Components.Pages {
             }
         }
 
+        private async Task BuscarAsociacion()
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(modelo.nrodni))
+                {
+                    modelo.Asociacion = "";
+                    return;
+                }
+
+                var lista = await Http.GetFromJsonAsync<List<PersoAsocDTO>>(
+                    "http://localhost:5297/api/PersoAsoc/listar"
+                );
+
+                var match = lista?
+                    .FirstOrDefault(x => x.dniPersAsoc == modelo.nrodni);
+
+                if (match != null)
+                {
+                    modelo.Asociacion = match.nombreAsociacion;
+                    modelo.direccionFiscal = match.domicilioPersAsoc;
+                    modelo.nombre = match.nombrePersAsoc;
+
+                    await InvokeAsync(StateHasChanged);
+
+                    if (form != null)
+                    {
+                        form.ResetValidation();
+                    }
+                }
+                else
+                {
+                    modelo.Asociacion = "";
+                    modelo.direccionFiscal = "";
+                    modelo.nombre = "";
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error buscando asociación: {ex.Message}");
+                modelo.Asociacion = "";
+            }
+        }
+
+        private async Task OnDniChanged(string value)
+        {
+            modelo.nrodni = value;
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                modelo.Asociacion = "";
+                return;
+            }
+
+            if (value.Length == 8)
+            {
+                await BuscarAsociacion();
+            }
+        }
+
+        private string ClaseNombre =>
+    !string.IsNullOrWhiteSpace(modelo.nombre)
+        ? "campo-verde"
+        : "";
+
+        private string ClaseDireccion =>
+            !string.IsNullOrWhiteSpace(modelo.direccionFiscal)
+                ? "campo-verde"
+                : "";
+
+        private string ClaseAsociacion =>
+    !string.IsNullOrWhiteSpace(modelo.Asociacion)
+        ? "campo-verde"
+        : "";
+
 
     }
 }

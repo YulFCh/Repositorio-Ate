@@ -17,6 +17,7 @@ namespace SistemaLicencias.SHARED.DTOs {
         public string nroConadis { get; set; } = "X";
         public int TipoDoc { get; set; }
         public string Pertenece { get; set; } = "NO";
+        public string Asociacion { get; set; }
 
     }
 
@@ -98,6 +99,19 @@ namespace SistemaLicencias.SHARED.DTOs {
         public bool Success { get; set; }
         public string Mensaje { get; set; } = string.Empty;
         public object? Id { get; set; }
+    }
+
+    public class PersoAsocDTO
+    {
+        public int idPersonAsoc { get; set; }
+        public string nombrePersAsoc { get; set; }
+        public string dniPersAsoc { get; set; }
+        public string domicilioPersAsoc { get; set; }
+        public DateTime fechaCreacion { get; set; }
+        public string usuarioCreacion { get; set; }
+        public DateTime? fechaModifica { get; set; }
+        public string usuarioModifica { get; set; }
+        public string nombreAsociacion { get; set; }
     }
 
 }

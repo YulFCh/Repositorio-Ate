@@ -27,6 +27,8 @@ builder.Services.AddEndpointsApiExplorer();
 ServiceMain.RegisterServices(builder.Services);
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddScoped<PersoAsocService>();
+
 var app = builder.Build();
 
 app.UseForwardedHeaders(new ForwardedHeadersOptions {
