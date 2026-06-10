@@ -203,21 +203,30 @@ namespace SISFRONT.Components.Pages {
             }
         }
 
-        private async Task AbriDialogZonasMaps() {
-            var options = new DialogOptions {
+        private async Task AbriDialogZonasMaps()
+        {
+            var options = new DialogOptions
+            {
                 MaxWidth = MaxWidth.Large,
                 FullWidth = true,
                 CloseOnEscapeKey = true,
-                CloseButton = true
+                CloseButton = true,
             };
 
             var dialog = DialogService.Show<DialogZonas>("Ubicación de subzonas", options);
             var rs = await dialog.Result;
-            if(!rs.Canceled) {
-                if(rs.Data is SubZonasAutApi sz) {
-                    nombSubZona = sz.Nombre;
-                    solDTO.IdSudZona = $"{sz.idSubzona}";
-                }
+
+            if (rs.Canceled || rs.Data is null)
+                return;
+
+            // 🔥 CASO 1: seleccionó subzona desde la tabla
+            if (rs.Data is DialogZonas.ResultadoZona datos)
+            {
+                nombSubZona = datos.NombreSubZona;
+                solDTO.IdSudZona = datos.IdSubZona.ToString();
+                solDTO.PuntoLocal = datos.Descripcion;
+
+                return;
             }
         }
 

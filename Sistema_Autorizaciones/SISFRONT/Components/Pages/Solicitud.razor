@@ -12,14 +12,21 @@
 @inject IGirosService GiroService
 
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="my-10 px-4">
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-10 form-page-bg">
     <MudForm @ref="form2">
-        <MudPaper Class="p-6 rounded-xl shadow-sm" Elevation="0">
+        <MudPaper Class="pa-6 rounded-xl bg-white form-card" Elevation="2">
 
             <!-- Título principal -->
-            <MudText Typo="Typo.h5" Align="Align.Center" Class="mb-4 text-primary fw-bold">
-                📝 Registro de Nueva Solicitud
-            </MudText>
+            <div class="mb-6">
+                <MudText Typo="Typo.h4"
+                         Color="Color.Primary"
+                         Class="fw-bold">
+                    Registro de Nueva Solicitud
+                </MudText>
+
+                <MudDivider Class="mt-4" />
+            </div>
 
             <!-- Sección: Datos Generales -->
             <MudText Typo="Typo.subtitle2" Class="mb-1 text-muted">📌 Datos Generales</MudText>
@@ -34,12 +41,14 @@
                 <MudItem xs="12" sm="6">
                     <MudDatePicker Label="Fecha de Solicitud"
                                    @bind-Date="solDTO.FechaSolicitud"
-                                   Dense="true"
+                                   Variant="Variant.Outlined"
+                                   Margin="Margin.Dense"
                                    Editable="true"
                                    Mask="@(new DateMask("dd/MM/yyyy"))"
                                    DateFormat="dd/MM/yyyy"
                                    Required="true"
-                                   Placeholder="dd/mm/yyyy" />
+                                   Placeholder="dd/mm/yyyy"
+                                   Class="w-100" />
                 </MudItem>
                 <!--
                 <MudItem xs="12" sm="6">
@@ -47,66 +56,118 @@
                 </MudItem>
                 -->
                 <MudItem xs="12" sm="6">
-                    <MudTextField Label="N° Expediente" @bind-Value="solDTO.NroExpediente" Dense="true" Required="true" />
+                    <MudTextField Label="N° Expediente"
+                                  @bind-Value="solDTO.NroExpediente"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Required="true"
+                                  Class="w-100" />
                 </MudItem>
+
                 <MudItem xs="12" sm="6">
-                    <MudDatePicker Label="Fecha Expediente" @bind-Date="solDTO.FechaExpediente"
-                                   Dense="true"
+                    <MudDatePicker Label="Fecha Expediente"
+                                   @bind-Date="solDTO.FechaExpediente"
+                                   Variant="Variant.Outlined"
+                                   Margin="Margin.Dense"
                                    Editable="true"
                                    Mask="@(new DateMask("dd/MM/yyyy"))"
                                    DateFormat="dd/MM/yyyy"
                                    Required="true"
-                                   Placeholder="dd/mm/yyyy" />
+                                   Placeholder="dd/mm/yyyy"
+                                   Class="w-100" />
                 </MudItem>
 
                 <MudItem xs="12" sm="6">
-                    <MudTextField Label="Punto Ubicacion" @bind-Value="solDTO.PuntoLocal" Dense="true" Required="true" />
+                    <MudTextField Label="Punto Ubicacion"
+                                  @bind-Value="solDTO.PuntoLocal"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Required="true"
+                                  ReadOnly="true"
+                                  Class="w-100" />
                 </MudItem>
 
                 <MudItem xs="12" sm="6">
-                    <MudSelect T="string" Label="Zonificacion" @bind-Value="solDTO.idTipoZonificacion" Required="true">
-                        @foreach(var i in lstZonificacion) {
-                            <MudSelectItem Value="@(i.idTipoZonif)">@i.descripcion</MudSelectItem>
+                    <MudSelect T="string"
+                               Label="Zonificacion"
+                               @bind-Value="solDTO.idTipoZonificacion"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               Required="true"
+                               Class="w-100">
+                        @foreach (var i in lstZonificacion)
+                        {
+                            <MudSelectItem Value="@(i.idTipoZonif)">
+                                @i.descripcion
+                            </MudSelectItem>
                         }
                     </MudSelect>
-
                 </MudItem>
 
                 <MudItem xs="12" sm="6">
-                    <MudSelect T="int?" Label="Giro Principal"
+                    <MudSelect T="int?"
+                               Label="Giro Principal"
                                Value="selectedPrincipalId"
                                ValueChanged="OnPrincipalChanged"
-                               Required="true">
-                        <MudSelectItem Value="@( (int?)null )" Disabled="true">Seleccione:</MudSelectItem>
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               Required="true"
+                               Class="w-100">
 
-                        @foreach(var item in girosPrincipales) {
-                            <MudSelectItem Value="@( (int?)item.IdGiroPrincipal )">@item.Nombre</MudSelectItem>
+                        <MudSelectItem Value="@((int?)null)" Disabled="true">
+                            Seleccione:
+                        </MudSelectItem>
+
+                        @foreach (var item in girosPrincipales)
+                        {
+                            <MudSelectItem Value="@((int?)item.IdGiroPrincipal)">
+                                @item.Nombre
+                            </MudSelectItem>
                         }
                     </MudSelect>
-
                 </MudItem>
 
                 <MudItem xs="12" sm="6">
-                    <MudSelect T="int?" Label="Giro Complementario"
+                    <MudSelect T="int?"
+                               Label="Giro Complementario"
                                Value="selectedComplementarioId"
                                ValueChanged="OnComplementarioChanged"
-                               Disabled="comboComplementarioDisabled">
-                        <MudSelectItem Value="@( (int?)null )" Disabled="true">Seleccione:</MudSelectItem>
+                               Disabled="comboComplementarioDisabled"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               Class="w-100">
 
-                        @foreach(var item in girosComplementarios) {
-                            <MudSelectItem Value="@( (int?)item.IdGiroComplementario )">@item.Nombre</MudSelectItem>
+                        <MudSelectItem Value="@((int?)null)" Disabled="true">
+                            Seleccione:
+                        </MudSelectItem>
+
+                        @foreach (var item in girosComplementarios)
+                        {
+                            <MudSelectItem Value="@((int?)item.IdGiroComplementario)">
+                                @item.Nombre
+                            </MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>
 
                 <MudItem xs="12" sm="6">
-                    <MudSelect T="int?" Label="Detalle Giro"
+                    <MudSelect T="int?"
+                               Label="Detalle Giro"
                                @bind-Value="selectedDetalleId"
-                               Disabled="comboDetalleDisabled">
-                        <MudSelectItem Value="@( (int?)null )" Disabled="true">Seleccione:</MudSelectItem>
+                               Disabled="comboDetalleDisabled"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               Class="w-100">
 
-                        @foreach(var item in girosDetalle) {
-                            <MudSelectItem Value="@( (int?)item.IdDetalleGiro )">@item.Nombre</MudSelectItem>
+                        <MudSelectItem Value="@((int?)null)" Disabled="true">
+                            Seleccione:
+                        </MudSelectItem>
+
+                        @foreach (var item in girosDetalle)
+                        {
+                            <MudSelectItem Value="@((int?)item.IdDetalleGiro)">
+                                @item.Nombre
+                            </MudSelectItem>
                         }
                     </MudSelect>
                 </MudItem>

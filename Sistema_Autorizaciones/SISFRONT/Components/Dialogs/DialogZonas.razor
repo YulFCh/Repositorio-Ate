@@ -3,96 +3,182 @@
 @using SistemaLicencias.SHARED.DTOs
 @using MudBlazor
 @inject GoogleMapsInterop MapsInterop
+@inject IDialogService DialogService
 
 <MudDialog >
     <DialogContent>
-      
-        <MudGrid>
-            @if(zonas?.Any() == true) {
-                <MudItem xs="12" md="4">
-                    <MudSelect T="int" Label="Selecciona una zona" @bind-Value="_zonaSeleccionada" Placeholder="Seleccione:" Dense="true" Class="mb-3">
-                        <MudSelectItem Value="0" Disabled="true">Seleccione:</MudSelectItem>
-                        @foreach(var zona in zonas) {
-                            <MudSelectItem Value="@zona.IdZona">@zona.Nombre</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
+        
+        <div class="map-container">
 
-                <MudItem xs="12" md="4">
-                    <MudSelect T="int" Label="Selecciona un año" @bind-Value="_anioSeleccionado" Placeholder="Seleccione:" Dense="true" Class="mb-3">
-                        <MudSelectItem Value="0" Disabled="true">Seleccione:</MudSelectItem>
-                        @foreach(var anio in ObtenerAnios()) {
-                            <MudSelectItem Value="@anio">@anio</MudSelectItem>
-                        }
-                    </MudSelect>
-                </MudItem>
+            <iframe src="https://www.google.com/maps/d/u/0/embed?mid=1K3bjGXqYzukUr6nYP1RZ5LsEK7Y&ehbc=2E312F&ll=-12.062118296145636,-76.93472867718684&z=13"
+                    loading="lazy">
+            </iframe>
 
-                <MudItem xs="12" md="4" Class="d-flex align-items-end">
-                    <MudButton Color="Color.Primary" OnClick="BuscarSubzonas" Variant="Variant.Filled">
-                        Buscar
-                    </MudButton>
-                </MudItem>
-            }
-            else {
-                <MudItem xs="12">
-                    <MudText Typo="Typo.body2">Cargando zonas disponibles...</MudText>
-                    <MudProgressCircular Color="Color.Primary" />
-                </MudItem>
-            }
+        </div>
+
+        <MudPaper Class="content-container" Elevation="1">
+        <MudGrid Class="mb-2">
+
+            <MudItem xs="12">
+                <MudGrid Spacing="2">
+
+                    <MudItem xs="6">
+                        <MudSelect T="int"
+                                   Label="Selecciona una zona"
+                                   Value="_zonaSeleccionada"
+                                   ValueChanged="OnZonaChanged"
+                                   Variant="Variant.Outlined"
+                                   Size="Size.Small"
+                                   Margin="Margin.Dense"
+                                       Class="field-white">
+
+                            <MudSelectItem Value="0" Disabled="true">
+                                Seleccione:
+                            </MudSelectItem>
+
+                            @foreach (var zona in zonas)
+                            {
+                                <MudSelectItem Value="@zona.IdZona">
+                                    @zona.Nombre
+                                </MudSelectItem>
+                            }
+
+                        </MudSelect>
+                    </MudItem>
+
+                    <MudItem xs="6">
+                        <MudSelect T="int"
+           Label="Selecciona un año"
+           Value="_anioSeleccionado"
+           ValueChanged="OnAnioChanged"
+           Variant="Variant.Outlined"
+           Size="Size.Small"
+           Margin="Margin.Dense"
+                                       Class="field-white">
+
+                            <MudSelectItem Value="0" Disabled="true">
+                                Seleccione:
+                            </MudSelectItem>
+
+                            @foreach (var anio in ObtenerAnios())
+                            {
+                                <MudSelectItem Value="@anio">
+                                    @anio
+                                </MudSelectItem>
+                            }
+
+                        </MudSelect>
+                    </MudItem>
+
+                </MudGrid>
+            </MudItem>
+
         </MudGrid>
 
+        <MudGrid Class="mb-2">
+            <MudItem xs="12">
+                    <MudTextField Label="Descripción del mapa"
+                                  @bind-Value="descripcionMapa"
+                                  Variant="Variant.Outlined"
+                                  Size="Size.Small"
+                                  Margin="Margin.Dense"
+                                  Lines="1"
+                                  Class="field-white"
+                                  Error="@_descripcionError"
+                                  ErrorText="La descripción es obligatoria"
+                                  Immediate="true"
+                                  @bind-Value:after="ValidarDescripcion" />
+            </MudItem>
+        </MudGrid>
 
-        <div id="my_map" style="height: 400px; width: 100%; margin-top:20px; border-radius:10px;"></div>
+        <MudGrid Class="mb-3">
 
-        <MudText Typo="Typo.h6" Class="mt-4 mb-2">Subzonas registradas</MudText>
+            <MudItem xs="12">
 
-        <MudTextField @bind-Value="_filtroNombre" Label="Buscar por nombre" Variant="Variant.Outlined" Dense="true" Class="mb-3" />
+                <!-- TABLA -->
+                <MudPaper Class="pa-4 mt-4" Elevation="2" Style="width:100%;">
+                    <MudTable Class="tabla-subzonas"
+                              Items="filteredSubzonas"
+                              RowsPerPage="6"
+                              Dense="true"
+                              Bordered="true"
+                              Hover="true"
+                              Striped="true"
+                              Elevation="1"
+                              Breakpoint="Breakpoint.Sm">
 
-        <MudTable Items="filteredSubzonas"
-                  RowsPerPage="6"
-                  Dense="true"
-                  Bordered="true"
-                  Hover="true"
-                  Striped="true"
-                  Elevation="0"
-                  Breakpoint="Breakpoint.Sm"
-                  RowClassFunc="@( (s, i) => s.Ocupados >= s.CapacidadTotal ? "subzona-llena" : s.Ocupados == 3 ? "subzona-ambar" : null )">
+                        <PagerContent>
+                            <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;padding:6px 10px;font-size:13px;color:#666;">
+
+                                <MudTablePager HideRowsPerPage="true"
+                                               AllItemsText=""
+                                               InfoFormat="{first_item}-{last_item} de {all_items}" />
+                            </div>
+                        </PagerContent>
+
+                            <ToolBarContent>
+                                <div style="width:100%; display:flex; align-items:center; padding:4px 8px; position:relative;">
+
+                                    <!-- CENTRO -->
+                                    <div style="position:absolute; left:50%; transform:translateX(-50%);
+                    font-weight:600; font-size:14px; color:#111827;">
+                                        SUBZONAS REGISTRADAS
+                                    </div>
+
+                                    <!-- DERECHA -->
+                                    <div style="margin-left:auto; width:243px;">
+                                        <MudTextField @bind-Value="_filtroNombre"
+                                                      Placeholder="Buscar..."
+                                                      Variant="Variant.Outlined"
+                                                      Size="Size.Small"
+                                                      Margin="Margin.Dense"
+                                                      Immediate="true"
+                                                      Clearable="true"
+                                                      Adornment="Adornment.Start"
+                                                      AdornmentIcon="@Icons.Material.Filled.Search" />
+                                    </div>
+
+                                </div>
+                            </ToolBarContent>
 
 
-            <HeaderContent>
-                <MudTh>Subzona</MudTh>
-                <MudTh>Capacidad</MudTh>                
-                <MudTh>Disponibles</MudTh>
-                <MudTh></MudTh>
-            </HeaderContent>
+                        <HeaderContent>
+                            <MudTh>Subzona</MudTh>
+                            <MudTh>Capacidad</MudTh>
+                            <MudTh>Disponibles</MudTh>
+                            <MudTh class="text-center">Acción</MudTh>
+                        </HeaderContent>
 
-            <RowTemplate>
-                <MudTd >@context.Nombre</MudTd>
-                <MudTd>@context.CapacidadTotal</MudTd>
-                <MudTd>@context.Ocupados / @context.CapacidadTotal</MudTd>
-                <MudTd>
-                    <MudButton Variant="Variant.Outlined"
-                               Color="Color.Primary"
-                               Size="Size.Small"
-                               Disabled="@((context.Ocupados >= context.CapacidadTotal))"
-                               OnClick="() => AgregarSubzona(context)">
-                        Agregar
-                    </MudButton>
-                </MudTd>
-            </RowTemplate>
+                        <RowTemplate>
+                            <MudTd>@context.Nombre</MudTd>
+                            <MudTd>@context.CapacidadTotal</MudTd>
+                            <MudTd>
+                                @($"{context.Ocupados} / {context.CapacidadTotal}")
+                            </MudTd>
+                            <MudTd class="text-center">
+                                <MudButton Variant="Variant.Filled"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           Disabled="@((context.Ocupados >= context.CapacidadTotal))"
+                                           OnClick="() => AgregarSubzona(context)">
+                                    Agregar
+                                </MudButton>
+                            </MudTd>
+                        </RowTemplate>
 
-            <PagerContent>
-                <MudTablePager />
-            </PagerContent>
-        </MudTable>
+                    </MudTable>
+
+                </MudPaper>
+
+            </MudItem>
+
+        </MudGrid>
+        </MudPaper>
 
 
 
     </DialogContent>
 
-    <DialogActions>
-        <MudButton OnClick="Cerrar" Color="Color.Secondary">Cerrar</MudButton>
-    </DialogActions>
 </MudDialog>
 <style>
     .subzona-llena {
@@ -123,6 +209,8 @@
     private string color = "";
     private int _anioSeleccionado = DateTime.Now.Year; // Año actual por defecto
 
+    private string _descripcionMapa = "";
+    private bool _descripcionError = false;
 
     private IEnumerable<SubZonasAutApi> filteredSubzonas =>
         string.IsNullOrWhiteSpace(_filtroNombre)
@@ -132,7 +220,7 @@
     protected override async Task OnAfterRenderAsync(bool firstRender) {
         if(firstRender) {
             var dotNetRef = DotNetObjectReference.Create(this);
-            await JS.InvokeVoidAsync("googleMaps.initMap", dotNetRef);
+            //await JS.InvokeVoidAsync("googleMaps.initMap", dotNetRef);
         }
     }
     protected override async Task OnInitializedAsync() {
@@ -193,11 +281,58 @@
         return anios;
     }
 
-    private void AgregarSubzona(SubZonasAutApi subzona) {
-        Console.WriteLine($"Subzona seleccionada: {subzona.Nombre}");
-        MudDialog?.Close(DialogResult.Ok(subzona));
+    private async Task AgregarSubzona(SubZonasAutApi subzona)
+    {
+        if (string.IsNullOrWhiteSpace(descripcionMapa))
+        {
+            _descripcionError = true;
+            StateHasChanged();
+            return;
+        }
+
+        _descripcionError = false;
+
+        MudDialog?.Close(DialogResult.Ok(new ResultadoZona
+        {
+            IdSubZona = subzona.idSubzona,
+            NombreSubZona = subzona.Nombre,
+            Descripcion = descripcionMapa
+        }));
     }
 
+    private string descripcionMapa = string.Empty;
+
+    private void CopiarDescripcion()
+    {
+        MudDialog.Close(DialogResult.Ok(descripcionMapa));
+    }
+
+    public class ResultadoZona
+    {
+        public int IdSubZona { get; set; }
+        public string NombreSubZona { get; set; }
+        public string Descripcion { get; set; }
+    }
+
+    private async Task OnZonaChanged(int value)
+    {
+        _zonaSeleccionada = value;
+
+        if (_zonaSeleccionada > 0 && _anioSeleccionado > 0)
+            await BuscarSubzonas();
+    }
+
+    private async Task OnAnioChanged(int value)
+    {
+        _anioSeleccionado = value;
+
+        if (_zonaSeleccionada > 0 && _anioSeleccionado > 0)
+            await BuscarSubzonas();
+    }
+    private void ValidarDescripcion()
+    {
+        _descripcionError = string.IsNullOrWhiteSpace(descripcionMapa);
+    }
 
     void Cerrar() => MudDialog?.Close();
 }
