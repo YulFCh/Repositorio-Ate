@@ -32,7 +32,8 @@ namespace SistemaLicencias.SHARED.DTOs {
         public int CapacidadExtra { get; set; }
         public int CapacidadTotal { get; set; }
         public int Ocupados { get; set; }
-        public int Disponibles { get; set; }        
+        public int Disponibles { get; set; }
+        public string PuntoUbicacion { get; set; }
 
     }
 }

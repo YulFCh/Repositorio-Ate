@@ -28,6 +28,7 @@ ServiceMain.RegisterServices(builder.Services);
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<PersoAsocService>();
+builder.Services.AddScoped<PuntoUbicacionService>();
 
 var app = builder.Build();
 

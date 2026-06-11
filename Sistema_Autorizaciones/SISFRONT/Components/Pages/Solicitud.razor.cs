@@ -224,7 +224,8 @@ namespace SISFRONT.Components.Pages {
             {
                 nombSubZona = datos.NombreSubZona;
                 solDTO.IdSudZona = datos.IdSubZona.ToString();
-                solDTO.PuntoLocal = datos.Descripcion;
+                // ✅ AQUÍ está el cambio importante
+                solDTO.PuntoLocal = datos.PuntoUbicacion;
 
                 return;
             }

@@ -47,6 +47,7 @@ namespace SistemaLicencias.SHARED.DTOs {
         public string telefono { get; set; }
         public DateTime? fecharegistro { get; set; }
         public int tipo_doc { get; set; }
+        public string asociacion { get; set; }
     }
 
     public class ApiResponse {

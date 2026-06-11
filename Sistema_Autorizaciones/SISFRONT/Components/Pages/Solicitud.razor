@@ -198,6 +198,12 @@
                 <MudText Typo="Typo.body2"><strong>Nombre:</strong> @dSoli.nombre</MudText>
                 <MudText Typo="Typo.body2"><strong>DNI:</strong> @dSoli.nrodni</MudText>
                 <MudText Typo="Typo.body2"><strong>Teléfono:</strong> @dSoli.telefono</MudText>
+                @if (!string.IsNullOrWhiteSpace(dSoli.asociacion))
+                {
+                    <MudText Typo="Typo.body2">
+                        <strong>Asociación:</strong> @dSoli.asociacion
+                    </MudText>
+                }
             </MudPaper>
 
             <!-- Horario de Funcionamiento -->

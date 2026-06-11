@@ -40,6 +40,7 @@
                 <HeaderContent>
                     <MudTh>Nombre</MudTh>
                     <MudTh>DNI</MudTh>
+                    <MudTh>Asociación</MudTh>
                     <MudTh>Teléfono</MudTh>
                     <MudTh>Fecha Registro</MudTh>
                     <MudTh>Tipo Doc</MudTh>
@@ -49,6 +50,7 @@
                 <RowTemplate>
                     <MudTd>@context.nombre</MudTd>
                     <MudTd>@context.nrodni</MudTd>
+                    <MudTd>@context.asociacion</MudTd>
                     <MudTd>@context.telefono</MudTd>
                     <MudTd>@context.fecharegistro?.ToString("yyyy-MM-dd")</MudTd>
                     <MudTd>@GetTipoDocLabel(context.tipo_doc)</MudTd>
@@ -93,27 +95,45 @@
     private DateTime? selectedDate = null;
 
 
-    protected override async Task OnInitializedAsync() {
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // 1. SOLICITANTES
+            var responseSolicitante = await Http.GetFromJsonAsync<ApiResponse>(
+                $"{_baseUrl}/api/Solicitante/getall");
 
-        try {
-            var responseSolicitante = await Http.GetFromJsonAsync<ApiResponse>($"{_baseUrl}/api/Solicitante/getall");
-
-            if(responseSolicitante?.response != null) {
+            if (responseSolicitante?.response != null)
+            {
                 solicitantes = responseSolicitante.response;
             }
-            else {
+            else
+            {
                 Console.WriteLine("No se recibió ninguna lista de solicitantes o la respuesta es vacía.");
             }
+
+            // 2. ASOCIACIONES (NUEVO)
+            var responseAsoc = await Http.GetFromJsonAsync<List<PersoAsocDTO>>(
+                "http://localhost:5297/api/PersoAsoc/listar"
+            );
+
+            var asociaciones = responseAsoc ?? new();
+
+            // 3. CRUCE POR DNI
+            foreach (var s in solicitantes)
+            {
+                var match = asociaciones.FirstOrDefault(x => x.dniPersAsoc == s.nrodni);
+                s.asociacion = match?.nombreAsociacion ?? "";
+            }
         }
-        catch(Exception ex) {
+        catch (Exception ex)
+        {
             Console.WriteLine($"Error al consultar solicitantes: {ex.Message}");
         }
-        finally {
+        finally
+        {
             isLoading = false;
         }
-
-
-
     }
 
 
