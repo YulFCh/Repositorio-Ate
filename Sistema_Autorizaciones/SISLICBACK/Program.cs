@@ -29,6 +29,7 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<PersoAsocService>();
 builder.Services.AddScoped<PuntoUbicacionService>();
+builder.Services.AddScoped<ConsultaSolcitudesService>();
 
 var app = builder.Build();
 
