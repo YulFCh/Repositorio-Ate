@@ -236,7 +236,7 @@
         try
         {
             puntosUbicacion = await Http.GetFromJsonAsync<List<PuntoUbicacionApi>>(
-                "http://localhost:5297/api/PuntoUbicacion?idZona=" + _zonaSeleccionada
+                "http://192.168.0.139:148/api/PuntoUbicacion?idZona=" + _zonaSeleccionada
             ) ?? new();
         }
         catch (Exception ex)

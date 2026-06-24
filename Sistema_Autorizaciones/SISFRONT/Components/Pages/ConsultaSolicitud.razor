@@ -13,7 +13,7 @@
             <select class="form-select"
                     value="@estadoSeleccionado"
                     @onchange="OnEstadoChanged">
-                <option value="1">Pendiente</option>
+                <option value="1">1</option>
                 <option value="2">Anulado</option>
             </select>
         </div>
@@ -202,7 +202,7 @@ else
     private async Task CargarSolicitudes()
     {
         solicitudes = await Http.GetFromJsonAsync<List<ConsultaSolicitudDto>>(
-            $"http://localhost:5297/api/ConsultaSolicitudes/listar?estado={estadoSeleccionado}"
+            $"http://192.168.0.139:148/api/ConsultaSolicitudes/listar?estado={estadoSeleccionado}"
         );
 
         FiltrarLocal();
@@ -211,7 +211,7 @@ else
     {
         return estado switch
         {
-            "1" => "Pendiente",
+            "1" => "1",
             "2" => "Anulado",
             _ => "Desconocido"
         };
@@ -273,7 +273,7 @@ else
     private void ExportarExcel()
     {
         var url =
-            $"http://localhost:5297/api/ConsultaSolicitudes/exportar?estado={estadoSeleccionado}";
+            $"http://192.168.0.139:148/api/ConsultaSolicitudes/exportar?estado={estadoSeleccionado}";
 
         NavigationManager.NavigateTo(url, forceLoad: true);
     }

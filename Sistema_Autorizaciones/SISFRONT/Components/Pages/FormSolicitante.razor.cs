@@ -161,7 +161,7 @@ namespace SISFRONT.Components.Pages {
                 }
 
                 var lista = await Http.GetFromJsonAsync<List<PersoAsocDTO>>(
-                    "http://localhost:5297/api/PersoAsoc/listar"
+                    "http://192.168.0.139:148/api/PersoAsoc/listar"
                 );
 
                 var match = lista?
