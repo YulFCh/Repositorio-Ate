@@ -1,0 +1,374 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "ApiConsultaDniPlanillas",
+    "version": "1.0"
+  },
+  "paths": {
+    "/api/ConsultaDni/historial/{dni}": {
+      "get": {
+        "tags": [
+          "ConsultaDni"
+        ],
+        "parameters": [
+          {
+            "name": "dni",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "anio",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "mesDesde",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "mesHasta",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BoletaHistorialResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BoletaHistorialResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BoletaHistorialResponse"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/WeatherForecast": {
+      "get": {
+        "tags": [
+          "WeatherForecast"
+        ],
+        "operationId": "GetWeatherForecast",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WeatherForecast"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WeatherForecast"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WeatherForecast"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BoletaHistorialResponse": {
+        "type": "object",
+        "properties": {
+          "idPlanilla": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "idEmpleado": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "entidad": {
+            "type": "string",
+            "nullable": true
+          },
+          "empleador": {
+            "type": "string",
+            "nullable": true
+          },
+          "ruc": {
+            "type": "string",
+            "nullable": true
+          },
+          "rubro": {
+            "type": "string",
+            "nullable": true
+          },
+          "meta": {
+            "type": "string",
+            "nullable": true
+          },
+          "centroCosto": {
+            "type": "string",
+            "nullable": true
+          },
+          "dni": {
+            "type": "string",
+            "nullable": true
+          },
+          "codEmpleado": {
+            "type": "string",
+            "nullable": true
+          },
+          "nombresCompletos": {
+            "type": "string",
+            "nullable": true
+          },
+          "fechaIngreso": {
+            "type": "string",
+            "nullable": true
+          },
+          "tipoPension": {
+            "type": "string",
+            "nullable": true
+          },
+          "adminPens": {
+            "type": "string",
+            "nullable": true
+          },
+          "cuspp": {
+            "type": "string",
+            "nullable": true
+          },
+          "tipoComision": {
+            "type": "string",
+            "nullable": true
+          },
+          "airhsp": {
+            "type": "string",
+            "nullable": true
+          },
+          "sede": {
+            "type": "string",
+            "nullable": true
+          },
+          "condicionLaboral": {
+            "type": "string",
+            "nullable": true
+          },
+          "condicion": {
+            "type": "string",
+            "nullable": true
+          },
+          "ocupacional": {
+            "type": "string",
+            "nullable": true
+          },
+          "estructural": {
+            "type": "string",
+            "nullable": true
+          },
+          "cargo": {
+            "type": "string",
+            "nullable": true
+          },
+          "anio": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "mes": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "jornada": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "diasLaborados": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "diasNoLaborados": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "subsidios": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "vacaciones": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "ingresos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConceptoDetalle"
+            },
+            "nullable": true
+          },
+          "egresos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConceptoDetalle"
+            },
+            "nullable": true
+          },
+          "aportes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConceptoDetalle"
+            },
+            "nullable": true
+          },
+          "totalIngresos": {
+            "type": "number",
+            "format": "double"
+          },
+          "totalEgresos": {
+            "type": "number",
+            "format": "double"
+          },
+          "netoPagar": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ConceptoDetalle": {
+        "type": "object",
+        "properties": {
+          "codigoInterno": {
+            "type": "string",
+            "nullable": true
+          },
+          "concepto": {
+            "type": "string",
+            "nullable": true
+          },
+          "monto": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "detail": {
+            "type": "string",
+            "nullable": true
+          },
+          "instance": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": { }
+      },
+      "WeatherForecast": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "temperatureC": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "temperatureF": {
+            "type": "integer",
+            "format": "int32",
+            "readOnly": true
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}
