@@ -1,2 +1,117 @@
 ﻿body {
+    background-color: #f4f7f6;
+}
+
+.card-modern {
+    background: #ffffff;
+    border-radius: 16px !important;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control-modern, .form-select-modern {
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    padding: 0.6rem 1rem;
+    background-color: #f8fafc;
+    transition: all 0.2s ease-in-out;
+}
+
+    .form-control-modern:focus, .form-select-modern:focus {
+        background-color: #fff;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+    }
+
+.btn-gradient-primary {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+    border-radius: 10px;
+    padding: 0.6rem 1.5rem;
+    border: none;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    transition: all 0.2s;
+}
+
+    .btn-gradient-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+        color: white;
+    }
+
+.table-modern thead th {
+    background-color: #f1f5f9;
+    color: #64748b;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.70rem;
+    letter-spacing: 0.6px;
+    border: none;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    white-space: nowrap;
+}
+
+.table-modern tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.boleta-container {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: #1e293b;
+    font-size: 0.88rem;
+}
+
+.boleta-section-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #64748b;
+    border-bottom: 2px solid #cbd5e1;
+    padding-bottom: 4px;
+    margin-bottom: 12px;
+}
+
+.data-item {
+    margin-bottom: 0.4rem;
+}
+
+.data-label {
+    color: #64748b;
+    font-weight: 500;
+    display: inline-block;
+    width: 150px;
+}
+
+.data-value {
+    color: #0f172a;
+    font-weight: 600;
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    #boletaImprimible, #boletaImprimible * {
+        visibility: visible;
+    }
+
+    #boletaImprimible {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+
+    .modal-footer, .btn-close {
+        display: none !important;
+    }
+}
+
+#boletasTable thead th {
+    font-weight: 700 !important; 
 }
