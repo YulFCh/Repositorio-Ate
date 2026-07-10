@@ -16,6 +16,7 @@ namespace ApiConsultaDniPlanillas.Models
     {
         public int IdPlanilla { get; set; }
         public int IdEmpleado { get; set; }
+        public string NombrePlanilla { get; set; }
         public string Entidad { get; set; }
         public string Empleador { get; set; }
         public string Ruc { get; set; }
@@ -37,6 +38,7 @@ namespace ApiConsultaDniPlanillas.Models
         public string Ocupacional { get; set; }
         public string Estructural { get; set; }
         public string Cargo { get; set; }
+        public string Situacion { get; set; }
         public int Anio { get; set; }
         public int Mes { get; set; }
 
@@ -62,6 +64,7 @@ namespace ApiConsultaDniPlanillas.Models
     {
         public int idPlanilla { get; set; }
         public int idEmpleado { get; set; }
+        public string nombrePlanilla { get; set; }
         public string Entidad { get; set; }
         public string Empleador { get; set; }
         public string Ruc { get; set; }
@@ -83,6 +86,7 @@ namespace ApiConsultaDniPlanillas.Models
         public string ocupacional { get; set; }
         public string Estructural { get; set; }
         public string cargo { get; set; }
+        public string situacion { get; set; }
         public int anio { get; set; }
         public int mes { get; set; }
 

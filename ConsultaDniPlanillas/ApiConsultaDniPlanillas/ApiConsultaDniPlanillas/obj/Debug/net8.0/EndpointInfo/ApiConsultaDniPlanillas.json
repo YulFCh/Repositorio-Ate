@@ -153,6 +153,10 @@
             "type": "integer",
             "format": "int32"
           },
+          "nombrePlanilla": {
+            "type": "string",
+            "nullable": true
+          },
           "entidad": {
             "type": "string",
             "nullable": true
@@ -234,6 +238,10 @@
             "nullable": true
           },
           "cargo": {
+            "type": "string",
+            "nullable": true
+          },
+          "situacion": {
             "type": "string",
             "nullable": true
           },

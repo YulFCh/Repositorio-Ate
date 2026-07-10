@@ -36,6 +36,7 @@ namespace ApiConsultaDniPlanillas.Services
                 commandType: CommandType.StoredProcedure
             );
 
+
             var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
             // Transformación final con todos los campos del SP asignados correspondientemente
@@ -44,6 +45,7 @@ namespace ApiConsultaDniPlanillas.Services
                 IdPlanilla = b.idPlanilla,
                 IdEmpleado = b.idEmpleado,
                 Entidad = b.Entidad,
+                NombrePlanilla = b.nombrePlanilla,
                 Empleador = b.Empleador,
                 Ruc = b.Ruc,
                 Rubro = b.Rubro,
@@ -64,6 +66,7 @@ namespace ApiConsultaDniPlanillas.Services
                 Ocupacional = b.ocupacional,
                 Estructural = b.Estructural,
                 Cargo = b.cargo,
+                Situacion = b.situacion,
                 Anio = b.anio,
                 Mes = b.mes,
 
