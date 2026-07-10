@@ -115,18 +115,22 @@
     }
 </style>
 
+
+
 <div class="container-fluid mt-5 px-lg-5">
     <div class="card card-modern mb-5">
         <div class="card-body p-4 p-lg-5">
             <div class="d-flex align-items-center mb-4">
-                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-3 me-3">
-                    <i class="fas fa-search fa-lg"></i>
-                </div>
-                <div>
-                    <h4 class="fw-bold mb-1 text-dark">Historial de Boletas de Pago</h4>
-                    <p class="text-muted mb-0 small">Filtre y visualice sus boletas ingresando los datos correspondientes.</p>
-                </div>
-            </div>
+    
+    <div class="p-2 bg-white rounded-3 me-3 shadow-sm d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; border: 1px solid #e2e8f0;">
+        <span style="display: block; width: 10px; height: 10px; background-color: #10b981; border-radius: 50%;"></span>
+    </div>
+    
+    <div>
+        <h4 class="fw-bold mb-1 text-dark">Historial de Boletas de Pago</h4>
+        <p class="text-muted mb-0 small">Filtre y visualice sus boletas ingresando los datos correspondientes.</p>
+    </div>
+</div>
 
             <form id="searchForm" class="row g-4">
                 <div class="col-md-3">
@@ -188,7 +192,7 @@
     <div class="card card-modern d-none" id="resultsCard">
         <div class="card-body p-0">
             <div class="p-4 border-bottom d-flex align-items-center justify-content-between">
-                <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-list-ul text-muted me-2"></i>Registros de Planilla Encontrados</h5>
+                <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-list-ul text-muted me-2"></i>Resultados</h5>
                 <span class="badge bg-light text-dark border px-3 py-2 rounded-pill small fw-medium">Datos en tiempo real</span>
             </div>
             <div class="table-responsive">
@@ -995,6 +999,13 @@ if (celdaDatos && celdaDatos.esFilaTotal && data.column.index === 5) {
         
         doc.line(91, 185, 91 + 40, 185); 
         doc.text('Firma de RRHH', 91 + 20, 189, { align: 'center' });
+
+        const dniLimpio = (item.dni || "SIN_DNI").trim();
+    const nombreDescarga = `${dniLimpio}_${mesTexto}_${item.anio}`;
+    
+    doc.setProperties({
+        title: nombreDescarga 
+    });
 
         const blobUrl = doc.output("bloburl");
         window.open(blobUrl, "_blank");

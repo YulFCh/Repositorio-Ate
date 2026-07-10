@@ -60,3 +60,4 @@ wwwroot\lib\jquery\dist\jquery.min.map
 wwwroot\lib\jquery\LICENSE.txt
 wwwroot\css\consulta.css
 wwwroot\js\consulta.js
+wwwroot\images\Logo_Muni.jpg
