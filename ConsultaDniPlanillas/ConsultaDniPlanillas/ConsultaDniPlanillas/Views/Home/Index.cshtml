@@ -6,6 +6,7 @@
     body {
         background-color: #f4f7f6;
     }
+
     .card-modern {
         background: #ffffff;
         border-radius: 16px !important;
@@ -13,6 +14,7 @@
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
+
     .form-control-modern, .form-select-modern {
         border-radius: 10px;
         border: 1px solid #e2e8f0;
@@ -20,11 +22,13 @@
         background-color: #f8fafc;
         transition: all 0.2s ease-in-out;
     }
-    .form-control-modern:focus, .form-select-modern:focus {
-        background-color: #fff;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
-    }
+
+        .form-control-modern:focus, .form-select-modern:focus {
+            background-color: #fff;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+        }
+
     .btn-gradient-primary {
         background: linear-gradient(135deg, #2563eb, #1d4ed8);
         color: white;
@@ -35,12 +39,13 @@
         box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
         transition: all 0.2s;
     }
-    .btn-gradient-primary:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
-        color: white;
-    }
-    /* Estilos tabla moderna */
+
+        .btn-gradient-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+            color: white;
+        }
+
     .table-modern thead th {
         background-color: #f1f5f9;
         color: #475569;
@@ -50,23 +55,17 @@
         letter-spacing: 0.5px;
         border: none;
     }
+
     .table-modern tbody tr {
         border-bottom: 1px solid #f1f5f9;
     }
-    /* Diseño de Boleta Ejecutiva */
+
     .boleta-container {
         font-family: 'Inter', system-ui, -apple-system, sans-serif;
         color: #1e293b;
         font-size: 0.88rem;
     }
-    .boleta-header-badge {
-        background-color: #eff6ff;
-        color: #1d4ed8;
-        padding: 0.5rem 1rem;
-        border-radius: 30px;
-        display: inline-block;
-        font-weight: 600;
-    }
+
     .boleta-section-title {
         font-size: 0.8rem;
         font-weight: 700;
@@ -77,29 +76,42 @@
         padding-bottom: 4px;
         margin-bottom: 12px;
     }
-    .data-box {
-        background-color: #f8fafc;
-        border-radius: 12px;
-        padding: 1rem;
-        border: 1px solid #f1f5f9;
-    }
+
     .data-item {
         margin-bottom: 0.4rem;
     }
+
     .data-label {
         color: #64748b;
         font-weight: 500;
+        display: inline-block;
+        width: 150px; 
     }
+
     .data-value {
         color: #0f172a;
         font-weight: 600;
     }
-    /* Ocultar elementos al imprimir */
+
     @@media print {
-        body * { visibility: hidden; }
-        #boletaImprimible, #boletaImprimible * { visibility: visible; }
-        #boletaImprimible { position: absolute; left: 0; top: 0; width: 100%; }
-        .modal-footer, .btn-close { display: none !important; }
+        body * {
+            visibility: hidden;
+        }
+
+        #boletaImprimible, #boletaImprimible * {
+            visibility: visible;
+        }
+
+        #boletaImprimible {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+        }
+
+        .modal-footer, .btn-close {
+            display: none !important;
+        }
     }
 </style>
 
@@ -115,7 +127,7 @@
                     <p class="text-muted mb-0 small">Filtre y visualice sus boletas ingresando los datos correspondientes.</p>
                 </div>
             </div>
-            
+
             <form id="searchForm" class="row g-4">
                 <div class="col-md-3">
                     <label for="dni" class="form-label small fw-semibold text-muted">Documento DNI *</label>
@@ -189,10 +201,10 @@
                             <th>Apellidos y Nombres</th>
                             <th>Condición Laboral</th>
                             <th>Cargo</th>
-                            <th>Área / C. Costo</th>
+                            <th>Área</th>
                             <th>Fec. Ing.</th>
                             <th>Sis. Pensiones</th>
-                            <th class="text-end">Neto Pagar</th>
+                            <th class="text-end">Situación</th>
                             <th class="text-center pe-4">Acción</th>
                         </tr>
                     </thead>
@@ -210,109 +222,182 @@
             <div class="modal-header border-0 bg-light py-3 px-4">
                 <div class="d-flex align-items-center">
                     <i class="fas fa-file-invoice-dollar text-primary fa-lg me-2"></i>
-                    <h6 class="modal-title fw-bold text-dark mb-0">Visualización de Boleta Electrónica</h6>
+                    <h6 class="modal-title fw-bold text-dark mb-0">Municipalidad Distrital de Ate - Visualización de Boleta Electrónica</h6>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            
+
             <div class="modal-body p-4 p-lg-5 boleta-container" id="boletaImprimible">
-                
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center border-bottom pb-4 mb-4">
-                    <div>
-                        <span class="boleta-header-badge mb-2" id="lblCondicionTitulo"></span>
-                        <h4 class="fw-bold text-slate-900 mb-0">BOLETA DE PAGO DIGITAL</h4>
+
+                <div class="text-center mb-4">
+                    <h4 class="fw-bold text-dark m-0">
+                        BOLETA DE PAGO - <span id="lblTituloPlanilla"></span>
+                    </h4>
+                    <h5 class="fw-bold text-dark mt-1">
+                        PERIODO: <span id="lblPeriodoTitulo"></span>
+                    </h5>
+                </div>
+
+
+                <div class="row g-4 mb-2">
+                    <div class="col-md-6">
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 70px;">Entidad</span>
+                            <span class="data-value flex-grow-1">: <span id="lblEntidad"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 70px;">Empleador</span>
+                            <span class="data-value flex-grow-1">: <span id="lblEmpleador"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 70px;">RUC</span>
+                            <span class="data-value flex-grow-1">: <span id="lblRuc"></span></span>
+                        </div>
                     </div>
-                    <div class="text-md-end mt-2 mt-md-0">
-                        <span class="text-muted small d-block">Periodo Declarado</span>
-                        <span class="fs-5 fw-bold text-primary" id="lblPeriodoTitulo"></span>
+
+                    <div class="col-md-6">
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 160px;">Rubro de Financiamiento</span>
+                            <span class="data-value flex-grow-1">: <span id="lblRubro"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 160px;">Meta Presupuestal</span>
+                            <span class="data-value flex-grow-1">: <span id="lblMeta"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 160px;">Unidad Orgánica</span>
+                            <span class="data-value flex-grow-1">: <span id="lblUnidadOrganica"></span></span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="row g-4 mb-4">
+                <hr class="my-4 text-muted">
+                <div class="row g-3">
                     <div class="col-md-6">
-                        <div class="data-box h-100">
-                            <div class="boleta-section-title"><i class="fas fa-building me-2"></i>Información del Empleador</div>
-                            <div class="data-item"><span class="data-label">Entidad:</span> <span class="data-value" id="lblEntidad"></span></div>
-                            <div class="data-item"><span class="data-label">Empleador:</span> <span class="data-value" id="lblEmpleador"></span></div>
-                            <div class="data-item"><span class="data-label">RUC:</span> <span class="data-value" id="lblRuc"></span></div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 180px;">Doc. Identidad</span>
+                            <span class="data-value flex-grow-1">: <span id="lblDni"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 180px;">Apellidos y Nombres</span>
+                            <span class="data-value text-primary flex-grow-1">: <span id="lblNombre"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 180px;">Cargo</span>
+                            <span class="data-value flex-grow-1">: <span id="lblCargo"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 180px;">Fecha de Ingreso</span>
+                            <span class="data-value flex-grow-1">: <span id="lblFechaIngreso"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 180px;">Régimen Pensionario</span>
+                            <span class="data-value flex-grow-1">: <span id="lblRegimen"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 180px;">Administrador de Pensión</span>
+                            <span class="data-value flex-grow-1">: <span id="lblAdminPens"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 180px;">CUSPP</span>
+                            <span class="data-value flex-grow-1">: <span id="lblCuspp"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 180px;">Fracción y Tipo de Pensión</span>
+                            <span class="data-value flex-grow-1">: <span id="lblTipoComision"></span></span>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="data-box h-100">
-                            <div class="boleta-section-title"><i class="fas fa-coins me-2"></i>Estructura Presupuestal</div>
-                            <div class="data-item"><span class="data-label">Rubro Financiamiento:</span> <span class="data-value" id="lblRubro"></span></div>
-                            <div class="data-item"><span class="data-label">Meta Presupuestal:</span> <span class="data-value" id="lblMeta"></span></div>
-                            <div class="data-item"><span class="data-label">Unidad Orgánica:</span> <span class="data-value" id="lblUnidadOrganica"></span></div>
+
+                    <div class="col-md-6 border-start-md">
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 140px;">Código AIRHSP</span>
+                            <span class="data-value flex-grow-1">: <span id="lblAirhsp"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 140px;">Establecimiento</span>
+                            <span class="data-value flex-grow-1">: <span id="lblSede"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 140px;">Régimen Laboral</span>
+                            <span class="data-value flex-grow-1">: <span id="lblRegimenLaboral"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 140px;">Condición</span>
+                            <span class="data-value flex-grow-1">: <span id="lblCondicion"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 140px;">Grupo Ocupacional</span>
+                            <span class="data-value flex-grow-1">: <span id="lblOcupacional"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 140px;">Cargo Estructural</span>
+                            <span class="data-value flex-grow-1">: <span id="lblEstructural"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 140px;">Jornada Laboral</span>
+                            <span class="data-value flex-grow-1">: <span id="lblJornada"></span></span>
                         </div>
                     </div>
                 </div>
 
                 <div class="card card-modern border mb-4 bg-light bg-opacity-50">
-                    <div class="card-body p-4">
-                        <div class="boleta-section-title"><i class="fas fa-user-tie me-2"></i>Datos Personales y Laborales del Servidor</div>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="data-item"><span class="data-label">Doc. Identidad (DNI):</span> <span class="data-value" id="lblDni"></span></div>
-                                <div class="data-item"><span class="data-label">Apellidos y Nombres:</span> <span class="data-value text-primary" id="lblNombre"></span></div>
-                                <div class="data-item"><span class="data-label">Cargo Ejecutado:</span> <span class="data-value" id="lblCargo"></span></div>
-                                <div class="data-item"><span class="data-label">Fecha de Ingreso:</span> <span class="data-value" id="lblFechaIngreso"></span></div>
-                                <div class="data-item"><span class="data-label">Régimen Pensionario:</span> <span class="data-value" id="lblRegimen"></span></div>
-                                <div class="data-item"><span class="data-label">Administradora (AFP/ONP):</span> <span class="data-value" id="lblAdminPens"></span></div>
-                                <div class="data-item"><span class="data-label">Código CUSPP:</span> <span class="data-value" id="lblCuspp"></span></div>
+                    <div class="p-4">
+                        <span class="text-muted small fw-bold d-block mb-3 text-uppercase tracking-wide" style="font-size:0.65rem">
+                            <i class="fas fa-calendar-check me-2 text-secondary"></i>Resumen de Asistencia del Periodo
+                        </span>
+
+                        <div class="row text-center g-2 bg-white rounded-3 border p-3 m-0 shadow-sm">
+                            <div class="col">
+                                <div class="fw-bold text-success fs-6" id="lblDiasLab">0</div>
+                                <span class="text-muted x-small d-block text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.3px;">Días Laborados</span>
                             </div>
-                            <div class="col-md-6 border-start-md">
-                                <div class="data-item"><span class="data-label">Código AIRHSP:</span> <span class="data-value" id="lblAirhsp"></span></div>
-                                <div class="data-item"><span class="data-label">Establecimiento / Sede:</span> <span class="data-value" id="lblSede"></span></div>
-                                <div class="data-item"><span class="data-label">Régimen Laboral:</span> <span class="data-value" id="lblRegimenLaboral"></span></div>
-                                <div class="data-item"><span class="data-label">Condición:</span> <span class="data-value" id="lblCondicion"></span></div>
-                                <div class="data-item"><span class="data-label">Cargo Estructural:</span> <span class="data-value" id="lblEstructural"></span></div>
-                                <div class="data-item"><span class="data-label">Código del Empleado:</span> <span class="data-value" id="lblCodEmpleado"></span></div>
-                                <div class="data-item"><span class="data-label">Fracción y Tipo Pensión:</span> <span class="data-value" id="lblTipoComision"></span></div>
+                            <div class="col border-start">
+                                <div class="fw-bold text-danger fs-6" id="lblDiasNoLab">0</div>
+                                <span class="text-muted x-small d-block text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.3px;">Días No Laborados.</span>
                             </div>
-                        </div>
-                        
-                        <div class="mt-4 p-3 bg-white rounded-3 border">
-                            <span class="text-muted small fw-bold d-block mb-2 text-uppercase tracking-wide" style="font-size:0.7rem">Resumen de Asistencia del Periodo</span>
-                            <div class="row text-center g-2">
-                                <div class="col"><div class="fw-bold text-dark fs-6" id="lblJornada">0</div><span class="text-muted x-small d-block text-uppercase">Jornada</span></div>
-                                <div class="col border-start"><div class="fw-bold text-success fs-6" id="lblDiasLab">0</div><span class="text-muted x-small d-block text-uppercase">Días Lab.</span></div>
-                                <div class="col border-start"><div class="fw-bold text-danger fs-6" id="lblDiasNoLab">0</div><span class="text-muted x-small d-block text-uppercase">No Lab.</span></div>
-                                <div class="col border-start"><div class="fw-bold text-warning fs-6" id="lblSubsidios">0</div><span class="text-muted x-small d-block text-uppercase">Subsidios</span></div>
-                                <div class="col border-start"><div class="fw-bold text-info fs-6" id="lblVacaciones">0</div><span class="text-muted x-small d-block text-uppercase">Vacaciones</span></div>
+                            <div class="col border-start">
+                                <div class="fw-bold text-warning fs-6" id="lblSubsidios">0</div>
+                                <span class="text-muted x-small d-block text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.3px;">Días Subsidiados</span>
+                            </div>
+                            <div class="col border-start">
+                                <div class="fw-bold text-info fs-6" id="lblVacaciones">0</div>
+                                <span class="text-muted x-small d-block text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.3px;">Periodo Vacacional</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="row g-4">
+
+                    
+                <div class="row g-3 mb-2">
                     <div class="col-md-6">
-                        <div class="card card-modern border h-100">
-                            <div class="card-header bg-success bg-opacity-10 border-0 py-3">
-                                <h6 class="fw-bold text-success mb-0"><i class="fas fa-plus-circle me-2"></i>Ingresos / Remuneraciones</h6>
+                        <div class="card card-modern border h-100 bg-light bg-opacity-50" style="overflow: hidden;">
+                            <div class="card-header bg-success bg-opacity-10 border-0 py-2 px-3">
+                                <h6 class="fw-bold text-success mb-0" style="font-size: 0.85rem;"><i class="fas fa-plus-circle me-2"></i>Ingresos / Remuneraciones</h6>
                             </div>
-                            <div class="card-body p-0">
-                                <table class="table table-hover table-borderless align-middle mb-0" id="tblModalIngresos" style="font-size: 0.85rem;">
+                            <div class="card-body p-0 bg-white">
+                                <table class="table table-hover table-borderless align-middle mb-0" id="tblModalIngresos" style="font-size: 0.8rem;">
                                     <tbody class="text-secondary"></tbody>
                                 </table>
                             </div>
-                            <div class="card-footer bg-light border-0 py-3 px-4 d-flex justify-content-between align-items-center fw-bold text-success">
+                            <div class="card-footer bg-white border-top py-2 px-3 d-flex justify-content-between align-items-center fw-bold text-success" style="font-size: 0.85rem;">
                                 <span>TOTAL INGRESOS:</span>
                                 <span>S/ <span id="lblTotalIngresos">0.00</span></span>
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="col-md-6">
-                        <div class="card card-modern border h-100">
-                            <div class="card-header bg-danger bg-opacity-10 border-0 py-3">
-                                <h6 class="fw-bold text-danger mb-0"><i class="fas fa-minus-circle me-2"></i>Egresos / Descuentos</h6>
+                        <div class="card card-modern border h-100 bg-light bg-opacity-50" style="overflow: hidden;">
+                            <div class="card-header bg-danger bg-opacity-10 border-0 py-2 px-3">
+                                <h6 class="fw-bold text-danger mb-0" style="font-size: 0.85rem;"><i class="fas fa-minus-circle me-2"></i>Egresos / Descuentos</h6>
                             </div>
-                            <div class="card-body p-0">
-                                <table class="table table-hover table-borderless align-middle mb-0" id="tblModalEgresos" style="font-size: 0.85rem;">
+                            <div class="card-body p-0 bg-white">
+                                <table class="table table-hover table-borderless align-middle mb-0" id="tblModalEgresos" style="font-size: 0.8rem;">
                                     <tbody class="text-secondary"></tbody>
                                 </table>
                             </div>
-                            <div class="card-footer bg-light border-0 py-3 px-4 d-flex justify-content-between align-items-center fw-bold text-danger">
+                            <div class="card-footer bg-white border-top py-2 px-3 d-flex justify-content-between align-items-center fw-bold text-danger" style="font-size: 0.85rem;">
                                 <span>TOTAL DESCUENTOS:</span>
                                 <span>S/ <span id="lblTotalEgresos">0.00</span></span>
                             </div>
@@ -320,51 +405,59 @@
                     </div>
                 </div>
 
-                <div class="card card-modern border mt-4">
-                    <div class="card-header bg-light border-0 py-2">
-                        <span class="text-muted fw-bold small text-uppercase" style="font-size:0.75rem">Aportaciones Institucionales (Empleador)</span>
+                <div class="card card-modern border mb-2 bg-light bg-opacity-50" style="overflow: hidden;">
+                    <div class="card-header bg-transparent border-0 py-2 px-3">
+                        <span class="text-muted fw-bold small text-uppercase" style="font-size:0.65rem; letter-spacing: 0.3px;">APORTES</span>
                     </div>
-                    <div class="card-body p-0 row g-0 align-items-center">
+                    <div class="card-body p-0 row g-0 align-items-center bg-white border-top m-0">
                         <div class="col-md-8">
-                            <table class="table table-borderless mb-0 py-2" id="tblModalAportes" style="font-size: 0.85rem;">
+                            <table class="table table-borderless mb-0 py-1" id="tblModalAportes" style="font-size: 0.8rem;">
                                 <tbody class="text-primary fw-medium"></tbody>
                             </table>
                         </div>
-                        <div class="col-md-4 text-md-end p-3 bg-light border-start fw-bold text-primary">
-                            <span class="small d-block text-muted fw-normal">Total Aportado:</span>
-                            S/ <span id="lblTotalAportes">0.00</span>
+                        <div class="col-md-4 text-md-end p-2 pe-3 bg-light bg-opacity-25 border-start fw-bold text-primary" style="font-size: 0.85rem;">
+                            <span class="text-muted fw-normal" style="font-size: 0.7rem; d-block;">Total Aportado:</span>
+                            <span class="d-md-block">S/ <span id="lblTotalAportes">0.00</span></span>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-4 p-4 rounded-4 d-flex justify-content-between align-items-center shadow-sm" style="background: linear-gradient(135deg, #1e293b, #0f172a); color: #fbbf24;">
+                <div class="mt-2 p-2 rounded-3 d-flex justify-content-between align-items-center border" style="background-color: #f1f5f9;">
                     <div class="d-flex align-items-center">
-                        <div class="p-3 bg-white bg-opacity-10 rounded-3 me-3 text-warning">
-                            <i class="fas fa-wallet fa-lg"></i>
+                        <div class="p-2 bg-white rounded-3 me-3 shadow-sm d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
+                            <span style="display: block; width: 10px; height: 10px; background-color: #10b981; border-radius: 50%;"></span>
                         </div>
                         <div>
-                            <span class="x-small d-block text-uppercase text-white text-opacity-70 fw-medium" style="letter-spacing:1px">Líquido a Percibir</span>
-                            <h5 class="fw-bold mb-0 text-white">NETO A PAGAR</h5>
+                            <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.85rem;">NETO A PAGAR</h6>
                         </div>
                     </div>
                     <div class="text-end">
-                        <h3 class="fw-black mb-0" style="font-size: 1.8rem; font-weight:800;">S/ <span id="lblNetoPagar">0.00</span></h3>
+                        <h4 class="mb-0" style="font-size: 1.5rem; font-weight: 850; color: #10b981; font-family: 'Courier New', Courier, monospace;">
+                            S/ <span id="lblNetoPagar" style="letter-spacing: -0.5px;">0.00</span>
+                        </h4>
                     </div>
                 </div>
-
+                
             </div>
-            
+
             <div class="modal-footer bg-light border-0 rounded-bottom-4 py-3 px-4">
-                <button type="button" class="btn btn-outline-primary rounded-3 px-3" onclick="window.print();">
-                    <i class="fas fa-print me-2"></i>Imprimir Boleta Oficial
-                </button>
+
+               <button type="button" class="btn btn-primary rounded-3 px-3" onclick="verBoletaPDFEnPestana(boletaSeleccionadaGlobal);">
+    <i class="fas fa-external-link-alt me-2"></i>Visualizar Boleta
+</button>
                 <button type="button" class="btn btn-secondary rounded-3 px-3" data-bs-dismiss="modal">Cerrar Ventana</button>
             </div>
         </div>
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
 <script>
+
+    let boletaSeleccionadaGlobal = null;
+
     const API_BASE = "http://192.168.4.91:203/api/ConsultaDni";
 
     document.getElementById("searchForm").addEventListener("submit", async function (e) {
@@ -414,11 +507,20 @@
         lista.forEach(item => {
             const pMes = item.mes.toString().padStart(2, '0');
             const periodo = `${pMes}/${item.anio}`;
-            
-            const regimenDesc = item.tipoPension || item.regimenPensionario || "-";
-            const codEmp = item.codEmpleado || item.idEmpleado;
 
-            // Se duplica la '@@' para escapar el motor Razor de ASP.NET
+            const regimenDesc = item.adminPens || item.tipoPension || item.regimenPensionario || "-";
+            const codEmp = item.codEmpleado || item.idEmpleado;
+            const situacion = item.situacion || "-";
+
+            let badgeColor = "bg-secondary bg-opacity-10 text-secondary";
+
+            if (situacion.toUpperCase() === "ACTIVO") {
+                badgeColor = "bg-success bg-opacity-10 text-success";
+            } else if (situacion.toUpperCase() === "INACTIVO") {
+                badgeColor = "bg-danger bg-opacity-10 text-danger";
+            }
+
+
             const itemString = JSON.stringify(item).replace(/'/g, "&@@apos;");
 
             tbody.innerHTML += `
@@ -432,10 +534,12 @@
                     <td>${item.centroCosto}</td>
                     <td>${item.fechaIngreso}</td>
                     <td>${regimenDesc}</td>
-                    <td class="text-end fw-bold text-dark">S/ ${item.netoPagar.toFixed(2)}</td>
+                    <td class="text-center">
+                        <span class="badge ${badgeColor} px-3 py-1.5 rounded-pill fw-semibold small">${situacion}</span>
+                    </td>
                     <td class="text-center pe-4">
-                        <button class="btn btn-sm btn-light border text-primary rounded-3" onclick='verBoleta(${itemString})' title="Ver Boleta">
-                            <i class="fas fa-eye"></i>
+                        <button class="btn btn-sm btn-primary px-3 rounded-3 shadow-sm d-inline-flex align-items-center justify-content-center" onclick='verBoleta(${itemString})' title="Ver Boleta" style="height: 32px;">
+                            <i class="fas fa-eye me-1"></i> <span class="fw-semibold" style="font-size: 0.75rem;">Ver</span>
                         </button>
                     </td>
                 </tr>`;
@@ -445,8 +549,12 @@
     }
 
     function verBoleta(item) {
-        $("#lblPeriodoTitulo").text(`${item.mes.toString().padStart(2, '0')} - ${item.anio}`);
-        $("#lblCondicionTitulo").text(item.condicionLaboral ? item.condicionLaboral.toUpperCase() : "");
+        boletaSeleccionadaGlobal = item;
+        const mesesNombres = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
+        const mesTexto = mesesNombres[parseInt(item.mes) - 1] || "MES";
+
+        $("#lblPeriodoTitulo").text(`${mesTexto} - ${item.anio}`);
+        $("#lblTituloPlanilla").text(item.nombrePlanilla ? item.nombrePlanilla.toUpperCase() : "PLANILLA CAS INDETERMINADOS");
 
         $("#lblEntidad").text(item.entidad || "Municipalidad Distrital de Ate");
         $("#lblEmpleador").text(item.empleador || "Municipalidad Distrital de Ate");
@@ -467,6 +575,7 @@
         $("#lblSede").text(item.sede || "PALACIO MUNICIPAL");
         $("#lblRegimenLaboral").text(item.condicionLaboral || "-");
         $("#lblCondicion").text(item.condicion || "-");
+        $("#lblOcupacional").text(item.ocupacional || "-");
         $("#lblEstructural").text(item.estructural || "-");
         $("#lblCodEmpleado").text(item.codEmpleado || item.idEmpleado);
         $("#lblTipoComision").text(item.tipoComision || "-");
@@ -521,4 +630,385 @@
         const modal = new bootstrap.Modal(document.getElementById("boletaModal"));
         modal.show();
     }
+
+
+    
+   
+    function verBoletaPDFEnPestana(item) {
+    if (!item) {
+        alert("No hay datos válidos para generar la boleta.");
+        return;
+    }
+
+    let jsPDFWindow = window.jspdf ? window.jspdf.jsPDF : window.jsPDF;
+    
+    if (!jsPDFWindow) {
+        alert("La librería jsPDF no está cargada correctamente. Verifica tus scripts.");
+        return;
+    }
+
+    
+    const doc = new jsPDFWindow({ orientation: 'portrait', unit: 'mm', format: 'a5' });
+    const pageWidth = doc.internal.pageSize.width;
+
+    const usuarioActivo = typeof window.g_UsuarioLoginCodigo !== 'undefined' ? window.g_UsuarioLoginCodigo : 'Invitado';
+    const linkDelLogo = window.location.origin + "/images/Logo_Muni.jpg";
+
+    const imgLogo = new Image();
+    imgLogo.crossOrigin = "Anonymous";
+    imgLogo.src = linkDelLogo;
+
+    imgLogo.onload = function () {
+        const ahora = new Date();
+        const fechaSistema = ahora.toLocaleDateString("es-PE", { day: "2-digit", month: "2-digit", year: "numeric" });
+        const horaSistema = ahora.toLocaleTimeString("es-PE", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true });
+
+        const mesesNombres = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
+        const mesTexto = mesesNombres[parseInt(item.mes) - 1] || "MES";
+        const periodoTexto = `${mesTexto} - ${item.anio}`;
+        const planillaTexto = item.nombrePlanilla ? item.nombrePlanilla.toUpperCase() : "PLANILLA CAS INDETERMINADOS";
+
+       
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7);
+        doc.text(fechaSistema, 143, 7, { align: "right" });
+        doc.text(horaSistema, 143, 11, { align: "right" });
+
+        
+        doc.addImage(imgLogo, 'JPEG', 5, 2, 14, 20);
+
+        
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(7);
+        doc.text(`BOLETA DE PAGO - ${planillaTexto}`, 148 / 2, 12, { align: "center" });
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(6);
+        doc.text(`PERIODO: ${periodoTexto}`, 148 / 2, 16, { align: "center" });
+
+        
+        let y = 25;
+        doc.setLineWidth(0.15);
+
+        
+        doc.setFont("helvetica", "bold"); doc.setFontSize(7); doc.text("Entidad", 5, y);
+        doc.text("Empleador", 5, y + 4);
+        doc.text("RUC", 5, y + 8);
+
+        doc.text(":", 20, y); doc.text(":", 20, y + 4); doc.text(":", 20, y + 8);
+
+        doc.setFont("helvetica", "normal"); doc.setFontSize(6);
+        doc.text(item.entidad || "Municipalidad Distrital de Ate", 22, y);
+        doc.text(item.empleador || "Municipalidad Distrital de Ate", 22, y + 4);
+        doc.text(item.ruc || "20131378620", 22, y + 8);
+
+       
+        doc.setFont("helvetica", "bold"); doc.setFontSize(7);
+        doc.text("Rubro de Financiamienta", 58, y);
+        doc.text("Meta Presupuestal", 58, y + 4);
+        doc.text("Unidad Orgánica", 58, y + 8);
+
+        doc.text(":", 90, y); doc.text(":", 90, y + 4); doc.text(":", 90, y + 8);
+
+        doc.setFont("helvetica", "normal"); doc.setFontSize(6);
+        doc.text(item.rubro || "-", 92, y);
+        doc.text(item.meta || "-", 92, y + 4);
+        
+        let centroCosto = item.centroCosto || "-";
+        doc.text(centroCosto, 92, y + 8, { maxWidth: 46 });
+
+        y += 11;
+        doc.line(5, y, 143, y);
+        y += 4;
+
+        
+        doc.setFont("helvetica", "bold"); doc.setFontSize(7); doc.text("Doc. Identidad", 5, y);
+        doc.text(":", 38, y);
+        doc.setFont("helvetica", "normal"); doc.text(item.dni || "-", 40, y);
+
+        doc.setFont("helvetica", "bold"); doc.text("Código AIRHSP", 74, y);
+        doc.text(":", 99, y);
+        doc.setFont("helvetica", "normal"); doc.text(item.airhsp || "-", 101, y);
+
+        y += 4;
+        doc.setFont("helvetica", "bold"); doc.text("Apellidos y Nombres", 5, y);
+        doc.text(":", 38, y);
+        doc.setFont("helvetica", "normal"); doc.text(item.nombresCompletos || "-", 40, y, { maxWidth: 98 });
+
+        y += 4;
+        doc.setFont("helvetica", "bold"); doc.text("Cargo", 5, y);
+        doc.text(":", 38, y);
+        doc.setFont("helvetica", "normal"); 
+        let cargoFinal = item.condicionLaboral === "REGIDOR MUNICIPAL" ? "REGIDOR" : (item.cargo || "-");
+        doc.text(cargoFinal, 40, y, { maxWidth: 98 });
+
+        y += 4;
+        doc.setFont("helvetica", "bold"); doc.text("Fecha de Ingresox", 5, y);
+        doc.text(":", 38, y);
+        doc.setFont("helvetica", "normal"); doc.text(item.fechaIngreso || "-", 40, y);
+
+        doc.setFont("helvetica", "bold"); doc.text("Establecimiento", 74, y);
+        doc.text(":", 99, y);
+        doc.setFont("helvetica", "normal"); doc.text(item.sede || "PALACIO MUNICIPAL", 101, y);
+
+        if (item.condicionLaboral !== "REGIDOR MUNICIPAL") {
+            y += 4;
+            doc.setFont("helvetica", "bold");
+            if (planillaTexto !== "PLANILLA PENSIONISTAS") {
+                doc.text("Régimen Pensionario", 5, y);
+                doc.text("Administrador de Pensión", 5, y + 4);
+                doc.text("CUSPP", 5, y + 8);
+                doc.text("Fracción y Tipo de Pensión", 5, y + 12);
+            } else {
+                doc.text("Régimen Laboral", 5, y);
+            }
+
+            doc.text(":", 38, y);
+            if (planillaTexto !== "PLANILLA PENSIONISTAS") {
+                doc.text(":", 38, y + 4); doc.text(":", 38, y + 8); doc.text(":", 38, y + 12);
+            }
+
+            doc.setFont("helvetica", "normal");
+            if (planillaTexto !== "PLANILLA PENSIONISTAS") {
+                doc.text(item.tipoPension || "-", 40, y);
+                doc.text(item.adminPens || "-", 40, y + 4);
+                doc.text(item.cuspp || "-", 40, y + 8);
+                doc.text(item.tipoComision || "-", 40, y + 12);
+            } else {
+                doc.text(item.condicionLaboral || "-", 40, y);
+            }
+
+            doc.setFont("helvetica", "bold");
+            doc.text("Régimen Laboral", 74, y);
+            doc.text("Condición", 74, y + 4);
+            doc.text("Grupo Ocupacional", 74, y + 8);
+            doc.text("Cargo Estructural", 74, y + 12);
+            doc.text("Jornada Laboral", 74, y + 16);
+
+            doc.text(":", 99, y); doc.text(":", 99, y + 4); doc.text(":", 99, y + 8); doc.text(":", 99, y + 12); doc.text(":", 99, y + 16);
+
+            doc.setFont("helvetica", "normal");
+            doc.text(item.condicionLaboral || "-", 101, y);
+            doc.text(item.condicion || "-", 101, y + 4);
+            doc.text(item.ocupacional || "-", 101, y + 8);
+            doc.text(item.estructural || "-", 101, y + 12);
+            doc.text(`${item.jornada || 0}`, 101, y + 16);
+            
+            y += 20;
+        } else {
+            y += 4;
+        }
+
+        
+        if (item.condicionLaboral !== "REGIDOR MUNICIPAL" && planillaTexto !== "PLANILLA PENSIONISTAS") {
+            doc.setFont("helvetica", "bold"); doc.text("Días Laborados", 5, y); doc.text(":", 25, y);
+            doc.setFont("helvetica", "normal"); doc.text(`${item.diasLaborados || 0}`, 27, y);
+
+            doc.setFont("helvetica", "bold"); doc.text("Días No Laborados", 45, y); doc.text(":", 69, y);
+            doc.setFont("helvetica", "normal"); doc.text(`${item.diasNoLaborados || 0}`, 71, y);
+
+            doc.setFont("helvetica", "bold"); doc.text("Días Subsidiados", 89, y); doc.text(":", 113, y);
+            doc.setFont("helvetica", "normal"); doc.text(`${item.subsidios || 0}`, 115, y);
+
+            y += 4;
+            doc.setFont("helvetica", "bold"); doc.text("Periodo Vacacional", 5, y); doc.text(":", 30, y);
+            doc.setFont("helvetica", "normal"); doc.text(`${item.vacaciones || 0}`, 32, y);
+            y += 4;
+        }
+
+        
+        doc.line(5, y, 143, y);
+        y += 2.2;
+        
+        doc.setFont("helvetica", "bold"); doc.setFontSize(7);
+        doc.text("CÓDIGO", 12.5, y, { align: "center" });
+        doc.text("CONCEPTO", 41.5, y, { align: "center" });
+        doc.text("MONTO", 68.5, y, { align: "center" });
+        
+        doc.text("CÓDIGO", 81.5, y, { align: "center" });
+        doc.text("CONCEPTO", 110.5, y, { align: "center" });
+        doc.text("MONTO", 137.5, y, { align: "center" });
+        
+        y += 1;
+        doc.line(5, y, 143, y);
+
+        
+        const ingresosArr = typeof item.ingresos === 'string' ? JSON.parse(item.ingresos || "[]") : (item.ingresos || []);
+        const egresosArr = typeof item.egresos === 'string' ? JSON.parse(item.egresos || "[]") : (item.egresos || []);
+        const aportesArr = typeof item.aportes === 'string' ? JSON.parse(item.aportes || "[]") : (item.aportes || []);
+
+        const rowsConceptos = [];
+
+        
+        rowsConceptos.push([
+            { content: "INGRESOS", colSpan: 6, styles: { fontStyle: 'bold', fontSize: 7, halign: 'left' } }
+        ]);
+
+        const cIng = ingresosArr.length;
+        const fIng = Math.ceil(cIng / 2);
+        for (let i = 0; i < fIng; i++) {
+            const ingCol1 = ingresosArr[i];
+            const ingCol2 = ingresosArr[i + fIng];
+
+            rowsConceptos.push([
+                ingCol1 ? ingCol1.codigoInterno : "",
+                ingCol1 ? ingCol1.concepto : "",
+                ingCol1 ? ingCol1.monto.toFixed(2) : "",
+                ingCol2 ? ingCol2.codigoInterno : "",
+                ingCol2 ? ingCol2.concepto : "",
+                ingCol2 ? ingCol2.monto.toFixed(2) : ""
+            ]);
+        }
+        rowsConceptos.push([
+            "", "", "", "", 
+            { content: "TOTAL INGRESOS", styles: { fontStyle: 'bold', halign: 'right', cellPadding: { right: 5 } } }, 
+            { content: item.totalIngresos.toFixed(2), styles: { fontStyle: 'bold', halign: 'right' }, esFilaTotal: true }
+        ]);
+
+        
+        rowsConceptos.push([
+            { content: "DESCUENTOS", colSpan: 6, styles: { fontStyle: 'bold', fontSize: 7, halign: 'left' }, esTituloBloque: true }
+        ]);
+
+        const cEgre = egresosArr.length;
+        const fEgre = Math.ceil(cEgre / 2);
+        for (let i = 0; i < fEgre; i++) {
+            const egrCol1 = egresosArr[i];
+            const egrCol2 = egresosArr[i + fEgre];
+
+            rowsConceptos.push([
+                egrCol1 ? egrCol1.codigoInterno : "",
+                egrCol1 ? egrCol1.concepto : "",
+                egrCol1 ? egrCol1.monto.toFixed(2) : "",
+                egrCol2 ? egrCol2.codigoInterno : "",
+                egrCol2 ? egrCol2.concepto : "",
+                egrCol2 ? egrCol2.monto.toFixed(2) : ""
+            ]);
+        }
+        rowsConceptos.push([
+            "", "", "", "", 
+            { content: "TOTAL DESCUENTOS", styles: { fontStyle: 'bold', halign: 'right', cellPadding: { right: 5 } } }, 
+            { content: item.totalEgresos.toFixed(2), styles: { fontStyle: 'bold', halign: 'right' }, esFilaTotal: true }
+        ]);
+
+        
+        if (aportesArr.length > 0) {
+            rowsConceptos.push([
+                { content: "APORTES", colSpan: 6, styles: { fontStyle: 'bold', fontSize: 7, halign: 'left' }, esTituloBloque: true }
+            ]);
+
+            const cApor = aportesArr.length;
+            const fApor = Math.ceil(cApor / 2);
+            let totalAportado = aportesArr.reduce((acc, a) => acc + a.monto, 0);
+
+            for (let i = 0; i < fApor; i++) {
+                const apoCol1 = aportesArr[i];
+                const apoCol2 = aportesArr[i + fApor];
+
+                rowsConceptos.push([
+                    apoCol1 ? apoCol1.codigoInterno : "",
+                    apoCol1 ? apoCol1.concepto : "",
+                    apoCol1 ? apoCol1.monto.toFixed(2) : "",
+                    apoCol2 ? apoCol2.codigoInterno : "",
+                    apoCol2 ? apoCol2.concepto : "",
+                    apoCol2 ? apoCol2.monto.toFixed(2) : ""
+                ]);
+            }
+            rowsConceptos.push([
+                "", "", "", "", 
+                { content: "TOTAL APORTES", styles: { fontStyle: 'bold', halign: 'right', cellPadding: { right: 5 } } }, 
+                { content: totalAportado.toFixed(2), styles: { fontStyle: 'bold', halign: 'right' }, esFilaTotal: true }
+            ]);
+        }
+
+        
+        doc.autoTable({
+            startY: y + 1.2,
+            margin: { left: 5, right: 5 },
+            theme: 'plain',
+            showHead: 'never',
+            body: rowsConceptos,
+            styles: { font: "helvetica", fontSize: 6, textColor: [0, 0, 0], cellPadding: 0.25 },
+            columnStyles: {
+                0: { width: 15, halign: 'center' },
+                1: { width: 39, halign: 'left' },
+                2: { width: 15, halign: 'right' },
+                3: { width: 15, cellPadding: { left: 2 }, halign: 'center' },
+                4: { width: 39, halign: 'left' },
+                5: { width: 15, halign: 'right' }
+            },
+            didDrawCell: function(data) {
+                const celdaDatos = data.row.raw[data.column.index];
+                
+               
+if (celdaDatos && celdaDatos.esFilaTotal && data.column.index === 5) {
+    doc.setLineWidth(0.15); 
+    doc.setDrawColor(0, 0, 0);
+    
+    
+    let xFin = data.cell.x + data.cell.width; 
+    
+    let xInicio = data.cell.x - 5; 
+    
+    doc.line(xInicio, data.cell.y, xFin, data.cell.y);
+}
+                
+                
+                const celdaCero = data.row.raw[0];
+                if (celdaCero && celdaCero.esTituloBloque && data.column.index === 0) {
+                    doc.setLineWidth(0.15);
+                    doc.setDrawColor(0, 0, 0);
+                    let yLineaBajoTitulo = data.cell.y + data.cell.height;
+                    doc.line(5, yLineaBajoTitulo, 143, yLineaBajoTitulo);
+                }
+            }
+        });
+
+        
+        let currentY = doc.lastAutoTable.finalY + 4;
+
+        
+        let inicioLineaX = pageWidth / 2; 
+        
+        doc.setLineWidth(0.15);
+        doc.line(inicioLineaX, currentY, 143, currentY); 
+        
+        currentY += 4;
+        doc.setFont("helvetica", "bold"); doc.setFontSize(7);
+        doc.text("NETO A PAGAR", 89, currentY);
+        
+        let netoCalculado = item.netoPagar;
+        if (Math.abs(netoCalculado) < 0.01) { 
+            netoCalculado = 0.00; 
+        }
+        doc.text(netoCalculado.toFixed(2), 143, currentY, { align: "right" });
+        
+        currentY += 2;
+        doc.line(inicioLineaX, currentY, 143, currentY); 
+
+        
+        doc.setFont("helvetica", "normal"); doc.setFontSize(6);
+        
+        
+        doc.line(17, 185, 17 + 40, 185); 
+        doc.text('Firma del Trabajador', 17 + 20, 189, { align: 'center' }); 
+
+        
+        doc.line(91, 185, 91 + 40, 185); 
+        doc.text('Firma de RRHH', 91 + 20, 189, { align: 'center' });
+
+        const blobUrl = doc.output("bloburl");
+        window.open(blobUrl, "_blank");
+    };
+
+    imgLogo.onerror = function () {
+        alert("No se pudo cargar el logo oficial, abriendo visor de boleta sin imagen.");
+        imgLogo.onload();
+    };
+}
+
+    
+
+
+
+
 </script>
