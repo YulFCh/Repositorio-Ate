@@ -45,5 +45,37 @@ namespace ApiConsultaDniPlanillas.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Error interno del servidor: {ex.Message}");
             }
         }
+
+        [HttpGet("empleado/{dni}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(EmpleadoEmailModel))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetEmpleadoPorDni(string dni)
+        {
+            if (string.IsNullOrWhiteSpace(dni) || dni.Length > 10)
+            {
+                return BadRequest("El DNI proporcionado no es válido.");
+            }
+
+            try
+            {
+                var empleado = await _consultaDniService.ObtenerEmpleadoPorDniAsync(dni);
+
+                if (empleado == null)
+                {
+                    return NotFound($"No se encontró empleado con DNI {dni}.");
+                }
+
+                return Ok(empleado);
+            }
+            catch (System.Exception ex)
+            {
+                return StatusCode(
+                    StatusCodes.Status500InternalServerError,
+                    $"Error interno del servidor: {ex.Message}"
+                );
+            }
+        }
     }
 }

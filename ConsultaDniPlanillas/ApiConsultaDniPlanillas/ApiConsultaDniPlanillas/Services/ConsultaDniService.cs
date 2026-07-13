@@ -90,5 +90,24 @@ namespace ApiConsultaDniPlanillas.Services
 
             return response;
         }
+
+        public async Task<EmpleadoEmailModel> ObtenerEmpleadoPorDniAsync(string dni)
+        {
+            using var connection = new SqlConnection(_connectionString);
+
+            var query = @"
+        SELECT 
+            dni AS Dni,
+            email AS Email
+        FROM dbo.empleado
+        WHERE dni = @dni";
+
+            var empleado = await connection.QueryFirstOrDefaultAsync<EmpleadoEmailModel>(
+                query,
+                new { dni }
+            );
+
+            return empleado;
+        }
     }
 }

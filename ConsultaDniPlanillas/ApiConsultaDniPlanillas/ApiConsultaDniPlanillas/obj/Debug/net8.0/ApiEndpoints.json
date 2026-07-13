@@ -1,6 +1,55 @@
 [
   {
     "ContainingType": "ApiConsultaDniPlanillas.Controllers.ConsultaDniController",
+    "Method": "GetEmpleadoPorDni",
+    "RelativePath": "api/ConsultaDni/empleado/{dni}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dni",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "ApiConsultaDniPlanillas.Models.EmpleadoEmailModel",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 200
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 404
+      },
+      {
+        "Type": "Microsoft.AspNetCore.Mvc.ProblemDetails",
+        "MediaTypes": [
+          "text/plain",
+          "application/json",
+          "text/json"
+        ],
+        "StatusCode": 400
+      },
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 500
+      }
+    ]
+  },
+  {
+    "ContainingType": "ApiConsultaDniPlanillas.Controllers.ConsultaDniController",
     "Method": "GetHistorialBoletas",
     "RelativePath": "api/ConsultaDni/historial/{dni}",
     "HttpMethod": "GET",
