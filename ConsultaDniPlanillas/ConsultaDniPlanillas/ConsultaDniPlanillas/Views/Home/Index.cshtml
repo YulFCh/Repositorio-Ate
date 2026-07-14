@@ -6,11 +6,9 @@
     <div class="card card-modern mb-5">
         <div class="card-body p-4 p-lg-5">
             <div class="d-flex align-items-center mb-4">
-
                 <div class="p-2 bg-white rounded-3 me-3 shadow-sm d-flex align-items-center justify-content-center" style="width: 45px; height: 45px; border: 1px solid #e2e8f0;">
                     <span style="display: block; width: 10px; height: 10px; background-color: #10b981; border-radius: 50%;"></span>
                 </div>
-
                 <div>
                     <h4 class="fw-bold mb-1 text-dark">CONSULTA DE BOLETAS DE PAGO</h4>
                     <p class="text-muted mb-0 small">Filtre y visualice sus boletas ingresando los datos correspondientes.</p>
@@ -23,50 +21,75 @@
                     <input type="text" class="form-control form-control-modern" id="dni" placeholder="Ingrese DNI" maxlength="10" required>
                 </div>
                 <div class="col-md-3">
-                    <label for="anio" class="form-label small fw-semibold text-muted">Año Laboral</label>
-                    <input type="number" class="form-control form-control-modern" id="anio" placeholder="Ej. 2026" min="2000" max="2099">
+                    <label for="correo" class="form-label small fw-semibold text-muted">Correo institucional*</label>
+                    <input type="email" class="form-control form-control-modern" id="correo" placeholder="Correo institucional">
                 </div>
                 <div class="col-md-3">
-                    <label for="mesDesde" class="form-label small fw-semibold text-muted">Desde el Mes</label>
-                    <select class="form-select form-select-modern" id="mesDesde">
-                        <option value="">-- Todos --</option>
-                        <option value="1">Enero</option>
-                        <option value="2">Febrero</option>
-                        <option value="3">Marzo</option>
-                        <option value="4">Abril</option>
-                        <option value="5">Mayo</option>
-                        <option value="6">Junio</option>
-                        <option value="7">Julio</option>
-                        <option value="8">Agosto</option>
-                        <option value="9">Septiembre</option>
-                        <option value="10">Octubre</option>
-                        <option value="11">Noviembre</option>
-                        <option value="12">Diciembre</option>
-                    </select>
+                    <label for="codigo_verificacion" class="form-label small fw-semibold text-muted">Código de verificación*(Ver correo)</label>
+                    <input type="text"
+                           class="form-control form-control-modern"
+                           id="codigo_verificacion"
+                           placeholder="Ingrese Código de verificación"
+                           maxlength="6"
+                           disabled
+                           required>
                 </div>
-                <div class="col-md-3">
-                    <label for="mesHasta" class="form-label small fw-semibold text-muted">Hasta el Mes</label>
-                    <select class="form-select form-select-modern" id="mesHasta">
-                        <option value="">-- Todos --</option>
-                        <option value="1">Enero</option>
-                        <option value="2">Febrero</option>
-                        <option value="3">Marzo</option>
-                        <option value="4">Abril</option>
-                        <option value="5">Mayo</option>
-                        <option value="6">Junio</option>
-                        <option value="7">Julio</option>
-                        <option value="8">Agosto</option>
-                        <option value="9">Septiembre</option>
-                        <option value="10">Octubre</option>
-                        <option value="11">Noviembre</option>
-                        <option value="12">Diciembre</option>
-                    </select>
-                </div>
-                <div class="col-12 text-end mt-4">
-                    <button type="submit" class="btn btn-gradient-primary">
-                        <i class="fas fa-spinner fa-spin d-none me-2" id="loadingSpinner"></i>
-                        <i class="fas fa-filter me-2" id="searchIcon"></i>Consultar Registros
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="button"
+                            id="btnEnviarCodigo"
+                            class="btn btn-primary w-100 mb-1"
+                            disabled>
+                        Enviar código
                     </button>
+                </div>
+
+                <div id="seccionFiltrosConsulta" class="row g-4 m-0 p-0 d-none">
+                    <div class="col-md-4">
+                        <label for="anio" class="form-label small fw-semibold text-muted">Año Laboral</label>
+                        <input type="number" class="form-control form-control-modern" id="anio" placeholder="Ej. 2026" min="2000" max="2099">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="mesDesde" class="form-label small fw-semibold text-muted">Desde el Mes</label>
+                        <select class="form-select form-select-modern" id="mesDesde">
+                            <option value="">-- Todos --</option>
+                            <option value="1">Enero</option>
+                            <option value="2">Febrero</option>
+                            <option value="3">Marzo</option>
+                            <option value="4">Abril</option>
+                            <option value="5">Mayo</option>
+                            <option value="6">Junio</option>
+                            <option value="7">Julio</option>
+                            <option value="8">Agosto</option>
+                            <option value="9">Septiembre</option>
+                            <option value="10">Octubre</option>
+                            <option value="11">Noviembre</option>
+                            <option value="12">Diciembre</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="mesHasta" class="form-label small fw-semibold text-muted">Hasta el Mes</label>
+                        <select class="form-select form-select-modern" id="mesHasta">
+                            <option value="">-- Todos --</option>
+                            <option value="1">Enero</option>
+                            <option value="2">Febrero</option>
+                            <option value="3">Marzo</option>
+                            <option value="4">Abril</option>
+                            <option value="5">Mayo</option>
+                            <option value="6">Junio</option>
+                            <option value="7">Julio</option>
+                            <option value="8">Agosto</option>
+                            <option value="9">Septiembre</option>
+                            <option value="10">Octubre</option>
+                            <option value="11">Noviembre</option>
+                            <option value="12">Diciembre</option>
+                        </select>
+                    </div>
+                    <div class="col-12 text-end mt-4">
+                        <button type="submit" class="btn btn-gradient-primary">
+                            <i class="fas fa-spinner fa-spin d-none me-2" id="loadingSpinner"></i>
+                            <i class="fas fa-filter me-2" id="searchIcon"></i>Consultar Registros
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -76,17 +99,12 @@
 
     <div class="card card-modern d-none" id="resultsCard">
         <div class="card-body p-0">
-            <div class="p-4 border-bottom d-flex align-items-center justify-content-between">               
+            <div class="p-4 border-bottom d-flex align-items-center justify-content-between">
                 <span class="badge bg-light text-dark border px-3 py-2 rounded-pill small fw-medium">Resultados de búsqueda</span>
                 <button id="btnVerSeleccionados" type="button" class="btn btn-sm btn-secondary px-3 rounded-2 shadow-sm d-inline-flex align-items-center gap-2" style="font-size: 0.75rem; height: 32px; font-weight: 600;" disabled>
-
                     <i class="fas fa-copy"></i>
-
                     <span>Ver Seleccionados (<span id="lblCantSeleccionados">0</span>)</span>
-
                 </button>
-
-            </div>
             </div>
             <div class="table-responsive">
                 <table class="table table-modern align-middle mb-0" id="boletasTable" style="font-size: 0.75rem;">
@@ -105,7 +123,6 @@
                             <th class="py-3">Fec. Ing.</th>
                             <th class="py-3">Sist. Pensiones</th>
                             <th class="text-end py-3">Situación</th>
-                            <th class="text-center pe-4 py-3">Acción</th>
                         </tr>
                     </thead>
                     <tbody class="text-secondary">
@@ -128,223 +145,215 @@
             </div>
 
             <div class="modal-body p-4 p-lg-5 boleta-container" id="boletaImprimible">
-                <div id="boletaImprimible">
-                    <div class="text-center mb-4">
-                        <h4 class="fw-bold text-dark m-0">
-                            BOLETA DE PAGO - <span id="lblTituloPlanilla"></span>
-                        </h4>
-                        <h5 class="fw-bold text-dark mt-1">
-                            PERIODO: <span id="lblPeriodoTitulo"></span>
-                        </h5>
-                    </div>
+                <div class="text-center mb-4">
+                    <h4 class="fw-bold text-dark m-0">
+                        BOLETA DE PAGO - <span id="lblTituloPlanilla"></span>
+                    </h4>
+                    <h5 class="fw-bold text-dark mt-1">
+                        PERIODO: <span id="lblPeriodoTitulo"></span>
+                    </h5>
+                </div>
 
-
-                    <div class="row g-4 mb-2">
-                        <div class="col-md-6">
-                            <div class="data-item d-flex">
-                                <span class="text-muted fw-medium" style="width: 70px;">Entidad</span>
-                                <span class="data-value flex-grow-1">: <span id="lblEntidad"></span></span>
-                            </div>
-                            <div class="data-item d-flex">
-                                <span class="text-muted fw-medium" style="width: 70px;">Empleador</span>
-                                <span class="data-value flex-grow-1">: <span id="lblEmpleador"></span></span>
-                            </div>
-                            <div class="data-item d-flex">
-                                <span class="text-muted fw-medium" style="width: 70px;">RUC</span>
-                                <span class="data-value flex-grow-1">: <span id="lblRuc"></span></span>
-                            </div>
+                <div class="row g-4 mb-2">
+                    <div class="col-md-6">
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 70px;">Entidad</span>
+                            <span class="data-value flex-grow-1">: <span id="lblEntidad"></span></span>
                         </div>
-
-                        <div class="col-md-6">
-                            <div class="data-item d-flex">
-                                <span class="text-muted fw-medium" style="width: 160px;">Rubro de Financiamiento</span>
-                                <span class="data-value flex-grow-1">: <span id="lblRubro"></span></span>
-                            </div>
-                            <div class="data-item d-flex">
-                                <span class="text-muted fw-medium" style="width: 160px;">Meta Presupuestal</span>
-                                <span class="data-value flex-grow-1">: <span id="lblMeta"></span></span>
-                            </div>
-                            <div class="data-item d-flex">
-                                <span class="text-muted fw-medium" style="width: 160px;">Unidad Orgánica</span>
-                                <span class="data-value flex-grow-1">: <span id="lblUnidadOrganica"></span></span>
-                            </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 70px;">Empleador</span>
+                            <span class="data-value flex-grow-1">: <span id="lblEmpleador"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 70px;">RUC</span>
+                            <span class="data-value flex-grow-1">: <span id="lblRuc"></span></span>
                         </div>
                     </div>
 
-                    <hr class="my-4 text-muted">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <div class="data-item d-flex">
-                                <span class="text-muted fw-medium" style="width: 180px;">Doc. Identidad</span>
-                                <span class="data-value flex-grow-1">: <span id="lblDni"></span></span>
-                            </div>
-                            <div class="data-item d-flex">
-                                <span class="text-muted fw-medium" style="width: 180px;">Apellidos y Nombres</span>
-                                <span class="data-value text-primary flex-grow-1">: <span id="lblNombre"></span></span>
-                            </div>
-                            <div class="data-item d-flex">
-                                <span class="text-muted fw-medium" style="width: 180px;">Cargo</span>
-                                <span class="data-value flex-grow-1">: <span id="lblCargo"></span></span>
-                            </div>
-                            <div class="data-item d-flex">
-                                <span class="text-muted fw-medium" style="width: 180px;">Fecha de Ingreso</span>
-                                <span class="data-value flex-grow-1">: <span id="lblFechaIngreso"></span></span>
-                            </div>
-                            <div class="data-item d-flex">
-                                <span class="text-muted fw-medium" style="width: 180px;">Régimen Pensionario</span>
-                                <span class="data-value flex-grow-1">: <span id="lblRegimen"></span></span>
-                            </div>
-                            <div class="data-item d-flex">
-                                <span class="text-muted fw-medium" style="width: 180px;">Administrador de Pensión</span>
-                                <span class="data-value flex-grow-1">: <span id="lblAdminPens"></span></span>
-                            </div>
-                            <div class="data-item d-flex">
-                                <span class="text-muted fw-medium" style="width: 180px;">CUSPP</span>
-                                <span class="data-value flex-grow-1">: <span id="lblCuspp"></span></span>
-                            </div>
-                            <div class="data-item d-flex">
-                                <span class="text-muted fw-medium" style="width: 180px;">Fracción y Tipo de Pensión</span>
-                                <span class="data-value flex-grow-1">: <span id="lblTipoComision"></span></span>
-                            </div>
+                    <div class="col-md-6">
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 160px;">Rubro de Financiamiento</span>
+                            <span class="data-value flex-grow-1">: <span id="lblRubro"></span></span>
                         </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 160px;">Meta Presupuestal</span>
+                            <span class="data-value flex-grow-1">: <span id="lblMeta"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 160px;">Unidad Orgánica</span>
+                            <span class="data-value flex-grow-1">: <span id="lblUnidadOrganica"></span></span>
+                        </div>
+                    </div>
+                </div>
 
-                        <div class="col-md-6 border-start-md">
-                            <div class="data-item d-flex">
-                                <span class="text-muted fw-medium" style="width: 140px;">Código AIRHSP</span>
-                                <span class="data-value flex-grow-1">: <span id="lblAirhsp"></span></span>
-                            </div>
-                            <div class="data-item d-flex">
-                                <span class="text-muted fw-medium" style="width: 140px;">Establecimiento</span>
-                                <span class="data-value flex-grow-1">: <span id="lblSede"></span></span>
-                            </div>
-                            <div class="data-item d-flex">
-                                <span class="text-muted fw-medium" style="width: 140px;">Régimen Laboral</span>
-                                <span class="data-value flex-grow-1">: <span id="lblRegimenLaboral"></span></span>
-                            </div>
-                            <div class="data-item d-flex">
-                                <span class="text-muted fw-medium" style="width: 140px;">Condición</span>
-                                <span class="data-value flex-grow-1">: <span id="lblCondicion"></span></span>
-                            </div>
-                            <div class="data-item d-flex">
-                                <span class="text-muted fw-medium" style="width: 140px;">Grupo Ocupacional</span>
-                                <span class="data-value flex-grow-1">: <span id="lblOcupacional"></span></span>
-                            </div>
-                            <div class="data-item d-flex">
-                                <span class="text-muted fw-medium" style="width: 140px;">Cargo Estructural</span>
-                                <span class="data-value flex-grow-1">: <span id="lblEstructural"></span></span>
-                            </div>
-                            <div class="data-item d-flex">
-                                <span class="text-muted fw-medium" style="width: 140px;">Jornada Laboral</span>
-                                <span class="data-value flex-grow-1">: <span id="lblJornada"></span></span>
-                            </div>
+                <hr class="my-4 text-muted">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 180px;">Doc. Identidad</span>
+                            <span class="data-value flex-grow-1">: <span id="lblDni"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 180px;">Apellidos y Nombres</span>
+                            <span class="data-value text-primary flex-grow-1">: <span id="lblNombre"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 180px;">Cargo</span>
+                            <span class="data-value flex-grow-1">: <span id="lblCargo"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 180px;">Fecha de Ingreso</span>
+                            <span class="data-value flex-grow-1">: <span id="lblFechaIngreso"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 180px;">Régimen Pensionario</span>
+                            <span class="data-value flex-grow-1">: <span id="lblRegimen"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 180px;">Administrador de Pensión</span>
+                            <span class="data-value flex-grow-1">: <span id="lblAdminPens"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 180px;">CUSPP</span>
+                            <span class="data-value flex-grow-1">: <span id="lblCuspp"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 180px;">Fracción y Tipo de Pensión</span>
+                            <span class="data-value flex-grow-1">: <span id="lblTipoComision"></span></span>
                         </div>
                     </div>
 
-                    <div class="card card-modern border mb-4 bg-light bg-opacity-50">
-                        <div class="p-4">
-                            <span class="text-muted small fw-bold d-block mb-3 text-uppercase tracking-wide" style="font-size:0.65rem">
-                                <i class="fas fa-calendar-check me-2 text-secondary"></i>Resumen de Asistencia del Periodo
-                            </span>
+                    <div class="col-md-6 border-start-md">
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 140px;">Código AIRHSP</span>
+                            <span class="data-value flex-grow-1">: <span id="lblAirhsp"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 140px;">Establecimiento</span>
+                            <span class="data-value flex-grow-1">: <span id="lblSede"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 140px;">Régimen Laboral</span>
+                            <span class="data-value flex-grow-1">: <span id="lblRegimenLaboral"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 140px;">Condición</span>
+                            <span class="data-value flex-grow-1">: <span id="lblCondicion"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 140px;">Grupo Ocupacional</span>
+                            <span class="data-value flex-grow-1">: <span id="lblOcupacional"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 140px;">Cargo Estructural</span>
+                            <span class="data-value flex-grow-1">: <span id="lblEstructural"></span></span>
+                        </div>
+                        <div class="data-item d-flex">
+                            <span class="text-muted fw-medium" style="width: 140px;">Jornada Laboral</span>
+                            <span class="data-value flex-grow-1">: <span id="lblJornada"></span></span>
+                        </div>
+                    </div>
+                </div>
 
-                            <div class="row text-center g-2 bg-white rounded-3 border p-3 m-0 shadow-sm">
-                                <div class="col">
-                                    <div class="fw-bold text-success fs-6" id="lblDiasLab">0</div>
-                                    <span class="text-muted x-small d-block text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.3px;">Días Laborados</span>
-                                </div>
-                                <div class="col border-start">
-                                    <div class="fw-bold text-danger fs-6" id="lblDiasNoLab">0</div>
-                                    <span class="text-muted x-small d-block text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.3px;">Días No Laborados.</span>
-                                </div>
-                                <div class="col border-start">
-                                    <div class="fw-bold text-warning fs-6" id="lblSubsidios">0</div>
-                                    <span class="text-muted x-small d-block text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.3px;">Días Subsidiados</span>
-                                </div>
-                                <div class="col border-start">
-                                    <div class="fw-bold text-info fs-6" id="lblVacaciones">0</div>
-                                    <span class="text-muted x-small d-block text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.3px;">Periodo Vacacional</span>
-                                </div>
+                <div class="card card-modern border mb-4 bg-light bg-opacity-50 mt-4">
+                    <div class="p-4">
+                        <span class="text-muted small fw-bold d-block mb-3 text-uppercase tracking-wide" style="font-size:0.65rem">
+                            <i class="fas fa-calendar-check me-2 text-secondary"></i>Resumen de Asistencia del Periodo
+                        </span>
+                        <div class="row text-center g-2 bg-white rounded-3 border p-3 m-0 shadow-sm">
+                            <div class="col">
+                                <div class="fw-bold text-success fs-6" id="lblDiasLab">0</div>
+                                <span class="text-muted x-small d-block text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.3px;">Días Laborados</span>
+                            </div>
+                            <div class="col border-start">
+                                <div class="fw-bold text-danger fs-6" id="lblDiasNoLab">0</div>
+                                <span class="text-muted x-small d-block text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.3px;">Días No Laborados.</span>
+                            </div>
+                            <div class="col border-start">
+                                <div class="fw-bold text-warning fs-6" id="lblSubsidios">0</div>
+                                <span class="text-muted x-small d-block text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.3px;">Días Subsidiados</span>
+                            </div>
+                            <div class="col border-start">
+                                <div class="fw-bold text-info fs-6" id="lblVacaciones">0</div>
+                                <span class="text-muted x-small d-block text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.3px;">Periodo Vacacional</span>
                             </div>
                         </div>
                     </div>
+                </div>
 
-
-
-                    <div class="row g-3 mb-2">
-                        <div class="col-md-6">
-                            <div class="card card-modern border h-100 bg-light bg-opacity-50" style="overflow: hidden;">
-                                <div class="card-header bg-success bg-opacity-10 border-0 py-2 px-3">
-                                    <h6 class="fw-bold text-success mb-0" style="font-size: 0.85rem;"><i class="fas fa-plus-circle me-2"></i>Ingresos / Remuneraciones</h6>
-                                </div>
-                                <div class="card-body p-0 bg-white">
-                                    <table class="table table-hover table-borderless align-middle mb-0" id="tblModalIngresos" style="font-size: 0.8rem;">
-                                        <tbody class="text-secondary"></tbody>
-                                    </table>
-                                </div>
-                                <div class="card-footer bg-white border-top py-2 px-3 d-flex justify-content-between align-items-center fw-bold text-success" style="font-size: 0.85rem;">
-                                    <span>TOTAL INGRESOS:</span>
-                                    <span>S/ <span id="lblTotalIngresos">0.00</span></span>
-                                </div>
+                <div class="row g-3 mb-2">
+                    <div class="col-md-6">
+                        <div class="card card-modern border h-100 bg-light bg-opacity-50" style="overflow: hidden;">
+                            <div class="card-header bg-success bg-opacity-10 border-0 py-2 px-3">
+                                <h6 class="fw-bold text-success mb-0" style="font-size: 0.85rem;"><i class="fas fa-plus-circle me-2"></i>Ingresos / Remuneraciones</h6>
                             </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="card card-modern border h-100 bg-light bg-opacity-50" style="overflow: hidden;">
-                                <div class="card-header bg-danger bg-opacity-10 border-0 py-2 px-3">
-                                    <h6 class="fw-bold text-danger mb-0" style="font-size: 0.85rem;"><i class="fas fa-minus-circle me-2"></i>Egresos / Descuentos</h6>
-                                </div>
-                                <div class="card-body p-0 bg-white">
-                                    <table class="table table-hover table-borderless align-middle mb-0" id="tblModalEgresos" style="font-size: 0.8rem;">
-                                        <tbody class="text-secondary"></tbody>
-                                    </table>
-                                </div>
-                                <div class="card-footer bg-white border-top py-2 px-3 d-flex justify-content-between align-items-center fw-bold text-danger" style="font-size: 0.85rem;">
-                                    <span>TOTAL DESCUENTOS:</span>
-                                    <span>S/ <span id="lblTotalEgresos">0.00</span></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="card card-modern border mb-2 bg-light bg-opacity-50" style="overflow: hidden;">
-                        <div class="card-header bg-transparent border-0 py-2 px-3">
-                            <span class="text-muted fw-bold small text-uppercase" style="font-size:0.65rem; letter-spacing: 0.3px;">APORTES</span>
-                        </div>
-                        <div class="card-body p-0 row g-0 align-items-center bg-white border-top m-0">
-                            <div class="col-md-8">
-                                <table class="table table-borderless mb-0 py-1" id="tblModalAportes" style="font-size: 0.8rem;">
-                                    <tbody class="text-primary fw-medium"></tbody>
+                            <div class="card-body p-0 bg-white">
+                                <table class="table table-hover table-borderless align-middle mb-0" id="tblModalIngresos" style="font-size: 0.8rem;">
+                                    <tbody class="text-secondary"></tbody>
                                 </table>
                             </div>
-                            <div class="col-md-4 text-md-end p-2 pe-3 bg-light bg-opacity-25 border-start fw-bold text-primary" style="font-size: 0.85rem;">
-                                <span class="text-muted fw-normal" style="font-size: 0.7rem; d-block;">Total Aportado:</span>
-                                <span class="d-md-block">S/ <span id="lblTotalAportes">0.00</span></span>
+                            <div class="card-footer bg-white border-top py-2 px-3 d-flex justify-content-between align-items-center fw-bold text-success" style="font-size: 0.85rem;">
+                                <span>TOTAL INGRESOS:</span>
+                                <span>S/ <span id="lblTotalIngresos">0.00</span></span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="mt-2 p-2 rounded-3 d-flex justify-content-between align-items-center border" style="background-color: #f1f5f9;">
-                        <div class="d-flex align-items-center">
-                            <div class="p-2 bg-white rounded-3 me-3 shadow-sm d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
-                                <span style="display: block; width: 10px; height: 10px; background-color: #10b981; border-radius: 50%;"></span>
+                    <div class="col-md-6">
+                        <div class="card card-modern border h-100 bg-light bg-opacity-50" style="overflow: hidden;">
+                            <div class="card-header bg-danger bg-opacity-10 border-0 py-2 px-3">
+                                <h6 class="fw-bold text-danger mb-0" style="font-size: 0.85rem;"><i class="fas fa-minus-circle me-2"></i>Egresos / Descuentos</h6>
                             </div>
-                            <div>
-                                <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.85rem;">NETO A PAGAR</h6>
+                            <div class="card-body p-0 bg-white">
+                                <table class="table table-hover table-borderless align-middle mb-0" id="tblModalEgresos" style="font-size: 0.8rem;">
+                                    <tbody class="text-secondary"></tbody>
+                                </table>
+                            </div>
+                            <div class="card-footer bg-white border-top py-2 px-3 d-flex justify-content-between align-items-center fw-bold text-danger" style="font-size: 0.85rem;">
+                                <span>TOTAL DESCUENTOS:</span>
+                                <span>S/ <span id="lblTotalEgresos">0.00</span></span>
                             </div>
                         </div>
-                        <div class="text-end">
-                            <h4 class="mb-0" style="font-size: 1.5rem; font-weight: 850; color: #10b981; font-family: 'Courier New', Courier, monospace;">
-                                S/ <span id="lblNetoPagar" style="letter-spacing: -0.5px;">0.00</span>
-                            </h4>
+                    </div>
+                </div>
+
+                <div class="card card-modern border mb-2 bg-light bg-opacity-50" style="overflow: hidden;">
+                    <div class="card-header bg-transparent border-0 py-2 px-3">
+                        <span class="text-muted fw-bold small text-uppercase" style="font-size:0.65rem; letter-spacing: 0.3px;">APORTES</span>
+                    </div>
+                    <div class="card-body p-0 row g-0 align-items-center bg-white border-top m-0">
+                        <div class="col-md-8">
+                            <table class="table table-borderless mb-0 py-1" id="tblModalAportes" style="font-size: 0.8rem;">
+                                <tbody class="text-primary fw-medium"></tbody>
+                            </table>
                         </div>
+                        <div class="col-md-4 text-md-end p-2 pe-3 bg-light bg-opacity-25 border-start fw-bold text-primary" style="font-size: 0.85rem;">
+                            <span class="text-muted fw-normal" style="font-size: 0.7rem; display: block;">Total Aportado:</span>
+                            <span class="d-md-block">S/ <span id="lblTotalAportes">0.00</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-2 p-2 rounded-3 d-flex justify-content-between align-items-center border" style="background-color: #f1f5f9;">
+                    <div class="d-flex align-items-center">
+                        <div class="p-2 bg-white rounded-3 me-3 shadow-sm d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;">
+                            <span style="display: block; width: 10px; height: 10px; background-color: #10b981; border-radius: 50%;"></span>
+                        </div>
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.85rem;">NETO A PAGAR</h6>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <h4 class="mb-0" style="font-size: 1.5rem; font-weight: 850; color: #10b981; font-family: 'Courier New', Courier, monospace;">
+                            S/ <span id="lblNetoPagar" style="letter-spacing: -0.5px;">0.00</span>
+                        </h4>
                     </div>
                 </div>
             </div>
 
             <div class="modal-footer bg-light border-0 rounded-bottom-4 py-3 px-4">
-
-                <button type="button" class="btn btn-primary" onclick="imprimirBoletasSeleccionadasPDF()">Visualizar Boleta</button>               
-
-                <button type="button" class="btn btn-secondary rounded-3 px-3" data-bs-dismiss="modal">Cerrar Ventana</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-arrow-left me-1"></i> Salir</button>
+                <button type="button" class="btn btn-primary" onclick="imprimirBoletasSeleccionadasPDF()">Exportar</button>
             </div>
         </div>
     </div>
@@ -352,6 +361,4 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-
 <script src="~/js/consulta.js" asp-append-version="true"></script>
-
