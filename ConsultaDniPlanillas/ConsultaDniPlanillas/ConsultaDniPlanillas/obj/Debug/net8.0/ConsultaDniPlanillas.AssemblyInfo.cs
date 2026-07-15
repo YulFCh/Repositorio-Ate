@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ConsultaDniPlanillas")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+76fbaa6ea45faf358a63e4032c93cf1360106ba6")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2b15fd4a5c49ccd01b02dc5a0935a238636d2aba")]
 [assembly: System.Reflection.AssemblyProductAttribute("ConsultaDniPlanillas")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ConsultaDniPlanillas")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

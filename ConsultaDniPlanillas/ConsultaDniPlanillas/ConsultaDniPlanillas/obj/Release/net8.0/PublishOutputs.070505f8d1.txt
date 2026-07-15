@@ -1,7 +1,0 @@
-D:\Repositorio-Ate\ConsultaDniPlanillas\ConsultaDniPlanillas\ConsultaDniPlanillas\obj\Release\net8.0\PubTmp\Out\ConsultaDniPlanillas.exe
-D:\Repositorio-Ate\ConsultaDniPlanillas\ConsultaDniPlanillas\ConsultaDniPlanillas\obj\Release\net8.0\PubTmp\Out\appsettings.Development.json
-D:\Repositorio-Ate\ConsultaDniPlanillas\ConsultaDniPlanillas\ConsultaDniPlanillas\obj\Release\net8.0\PubTmp\Out\appsettings.json
-D:\Repositorio-Ate\ConsultaDniPlanillas\ConsultaDniPlanillas\ConsultaDniPlanillas\obj\Release\net8.0\PubTmp\Out\ConsultaDniPlanillas.dll
-D:\Repositorio-Ate\ConsultaDniPlanillas\ConsultaDniPlanillas\ConsultaDniPlanillas\obj\Release\net8.0\PubTmp\Out\ConsultaDniPlanillas.deps.json
-D:\Repositorio-Ate\ConsultaDniPlanillas\ConsultaDniPlanillas\ConsultaDniPlanillas\obj\Release\net8.0\PubTmp\Out\ConsultaDniPlanillas.runtimeconfig.json
-D:\Repositorio-Ate\ConsultaDniPlanillas\ConsultaDniPlanillas\ConsultaDniPlanillas\obj\Release\net8.0\PubTmp\Out\ConsultaDniPlanillas.pdb
